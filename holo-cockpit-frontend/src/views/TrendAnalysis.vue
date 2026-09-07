@@ -27,12 +27,6 @@
       </div>
     </header>
 
-    <!-- ===== 商家权限提示 ===== -->
-    <div v-if="!isAdmin && ready" class="role-notice">
-      <span class="notice-icon">🔒</span>
-      <span>商家视图：按权限设置，销售额等金额指标不可见，以下为订单与流量维度分析</span>
-    </div>
-
     <!-- ===== 加载 / 错误态 ===== -->
     <div v-if="loading" class="state-box">
       <div class="loading-dots"></div>
@@ -51,12 +45,18 @@
 
     <!-- ===== 主体 ===== -->
     <main v-else-if="ready" class="trend-body">
-      <!-- 数据范围条 -->
-      <div class="range-bar">
-        <span class="range-icon">📅</span>
-        <span>统计范围：<b>{{ dateRange }}</b>（共 {{ rows.length }} 天）</span>
-        <span class="range-dot"></span>
-        <span>数据粒度：按天</span>
+      <!-- 信息条：统计范围 + 权限提示 -->
+      <div class="info-bar">
+        <span class="info-chip">
+          <span class="chip-icon">📅</span>
+          统计范围 <b>{{ dateRange }}</b>
+          <span class="chip-sep">·</span>
+          共 {{ rows.length }} 天 · 按天粒度
+        </span>
+        <span v-if="!isAdmin" class="info-chip chip-lock">
+          <span class="chip-icon">🔒</span>
+          商家视图：销售额等金额指标不可见，以下为订单与流量维度分析
+        </span>
       </div>
 
       <!-- KPI 指标卡 -->
@@ -71,21 +71,20 @@
         </div>
       </div>
 
-      <!-- 主图：30 日趋势 -->
-      <section class="panel panel-main">
-        <span class="corner-tl"></span><span class="corner-tr"></span>
-        <span class="corner-bl"></span><span class="corner-br"></span>
-        <div class="panel-title">
-          <span class="panel-no">01</span>
-          {{ isAdmin ? '30 日销售趋势' : '30 日订单趋势' }}
-          <span class="title-en">30-Day Trend</span>
-        </div>
-        <div ref="mainChartEl" class="chart chart-main"></div>
-      </section>
+      <!-- 核心区：30 日趋势（左 2/3）+ 周环比（右 1/3） -->
+      <div class="grid-main">
+        <section class="panel panel-main">
+          <span class="corner-tl"></span><span class="corner-tr"></span>
+          <span class="corner-bl"></span><span class="corner-br"></span>
+          <div class="panel-title">
+            <span class="panel-no">01</span>
+            {{ isAdmin ? '30 日销售趋势' : '30 日订单趋势' }}
+            <span class="title-en">30-Day Trend</span>
+          </div>
+          <div ref="mainChartEl" class="chart chart-main"></div>
+        </section>
 
-      <!-- 第二行：环比分析 + 周内效应 -->
-      <div class="row-2col">
-        <section class="panel">
+        <section class="panel panel-wow">
           <span class="corner-tl"></span><span class="corner-tr"></span>
           <span class="corner-bl"></span><span class="corner-br"></span>
           <div class="panel-title">
@@ -95,15 +94,18 @@
           </div>
           <div class="wow-wrap">
             <div v-for="m in wowMetrics" :key="m.label" class="wow-item">
-              <div class="wow-label">{{ m.label }}</div>
+              <div class="wow-head">
+                <span class="wow-label">{{ m.label }}</span>
+                <span class="wow-arrow" :class="m.pct >= 0 ? 'up' : 'down'">
+                  {{ m.pct >= 0 ? '▲' : '▼' }} {{ Math.abs(m.pct).toFixed(1) }}%
+                </span>
+              </div>
               <div class="wow-values">
                 <div class="wow-col">
                   <div class="wow-col-label">本周</div>
                   <div class="wow-col-value now">{{ m.now }}</div>
                 </div>
-                <div class="wow-arrow" :class="m.pct >= 0 ? 'up' : 'down'">
-                  {{ m.pct >= 0 ? '▲' : '▼' }} {{ Math.abs(m.pct).toFixed(1) }}%
-                </div>
+                <div class="wow-divider"></div>
                 <div class="wow-col">
                   <div class="wow-col-label">上周</div>
                   <div class="wow-col-value prev">{{ m.prev }}</div>
@@ -116,7 +118,10 @@
             </div>
           </div>
         </section>
+      </div>
 
+      <!-- 底部区：三等分 -->
+      <div class="grid-triple">
         <section class="panel">
           <span class="corner-tl"></span><span class="corner-tr"></span>
           <span class="corner-bl"></span><span class="corner-br"></span>
@@ -125,12 +130,9 @@
             {{ isAdmin ? '周内销售效应' : '周内订单效应' }}
             <span class="title-en">Weekday Effect</span>
           </div>
-          <div ref="weekdayChartEl" class="chart chart-half"></div>
+          <div ref="weekdayChartEl" class="chart chart-third"></div>
         </section>
-      </div>
 
-      <!-- 第三行：每日环比增长率 + 客单价/转化率 -->
-      <div class="row-2col">
         <section class="panel">
           <span class="corner-tl"></span><span class="corner-tr"></span>
           <span class="corner-bl"></span><span class="corner-br"></span>
@@ -139,7 +141,7 @@
             每日环比增长率
             <span class="title-en">Daily Growth</span>
           </div>
-          <div ref="growthChartEl" class="chart chart-half"></div>
+          <div ref="growthChartEl" class="chart chart-third"></div>
         </section>
 
         <section class="panel">
@@ -150,7 +152,7 @@
             {{ isAdmin ? '客单价趋势' : '访问 - 转化趋势' }}
             <span class="title-en">{{ isAdmin ? 'Avg Order Value' : 'Conversion' }}</span>
           </div>
-          <div ref="auxChartEl" class="chart chart-half"></div>
+          <div ref="auxChartEl" class="chart chart-third"></div>
         </section>
       </div>
     </main>
@@ -594,18 +596,19 @@ onBeforeUnmount(() => {
 .role-merchant { color: #00ffa3; background: rgba(0, 255, 163, 0.08); border: 1px solid rgba(0, 255, 163, 0.3); }
 .header-time { font-size: 12px; color: #7a97c5; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-/* ===== 商家提示条 ===== */
-.role-notice {
-  position: relative; z-index: 2;
-  margin: 12px 28px 0;
-  display: flex; align-items: center; gap: 10px;
-  padding: 10px 16px; font-size: 13px;
-  color: #00ffa3;
-  background: rgba(0, 255, 163, 0.06);
-  border: 1px solid rgba(0, 255, 163, 0.25);
-  border-radius: 8px;
+/* ===== 信息条 ===== */
+.info-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.info-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12px; color: #7a97c5; white-space: nowrap;
+  padding: 6px 14px; border-radius: 999px;
+  background: rgba(0, 212, 255, 0.04);
+  border: 1px solid rgba(0, 212, 255, 0.14);
 }
-.notice-icon { font-size: 15px; }
+.info-chip b { color: #c9e1ff; font-weight: 600; }
+.chip-icon { font-size: 13px; }
+.chip-sep { color: rgba(122, 151, 197, 0.5); }
+.chip-lock { color: #00ffa3; background: rgba(0, 255, 163, 0.05); border-color: rgba(0, 255, 163, 0.22); }
 
 /* ===== 加载 / 错误 / 空态 ===== */
 .state-box {
@@ -638,21 +641,9 @@ onBeforeUnmount(() => {
   max-width: 1680px; width: 100%; margin: 0 auto; box-sizing: border-box;
 }
 
-/* 数据范围条 */
-.range-bar {
-  display: flex; align-items: center; gap: 10px;
-  font-size: 12px; color: #7a97c5;
-  padding: 8px 14px;
-  background: rgba(0, 212, 255, 0.04);
-  border: 1px solid rgba(0, 212, 255, 0.14);
-  border-radius: 8px;
-}
-.range-bar b { color: #c9e1ff; font-weight: 600; }
-.range-dot { width: 4px; height: 4px; border-radius: 50%; background: rgba(0, 212, 255, 0.5); }
-
 /* KPI 卡 */
 .kpi-grid {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+  display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px;
 }
 .kpi-card {
   --c: #00d4ff;
@@ -670,7 +661,15 @@ onBeforeUnmount(() => {
   background: var(--c); box-shadow: 0 0 12px var(--c);
 }
 .kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35), 0 0 16px rgba(0, 212, 255, 0.08); }
-.kpi-icon { font-size: 26px; filter: drop-shadow(0 0 8px var(--c)); }
+.kpi-icon {
+  flex-shrink: 0;
+  width: 48px; height: 48px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px;
+  background: color-mix(in srgb, var(--c) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--c) 26%, transparent);
+  box-shadow: inset 0 0 12px color-mix(in srgb, var(--c) 12%, transparent);
+}
 .kpi-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .kpi-label { font-size: 12px; color: #7a97c5; letter-spacing: 1px; }
 .kpi-value {
@@ -709,27 +708,49 @@ onBeforeUnmount(() => {
 }
 .title-en { font-size: 10px; color: rgba(122, 151, 197, 0.65); letter-spacing: 1px; }
 
-/* 主图高度 */
-.panel-main .chart-main { height: 380px; }
-.chart { width: 100%; }
-
-/* 双列行 */
-.row-2col {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+/* ===== 核心区：主图（2/3）+ 周环比（1/3） ===== */
+.grid-main {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: 14px;
+  align-items: stretch;
 }
-.chart-half { height: 260px; }
+.chart-main { height: 380px; }
+.chart { width: 100%; min-width: 0; }
+
+/* ===== 底部区：三等分 ===== */
+.grid-triple {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.chart-third { height: 250px; }
 
 /* ===== 周环比面板 ===== */
-.wow-wrap { display: flex; flex-direction: column; gap: 16px; padding: 8px 6px 12px; }
-.wow-item { display: flex; flex-direction: column; gap: 8px; }
+.panel-wow { display: flex; flex-direction: column; min-height: 0; }
+.wow-wrap {
+  flex: 1; min-height: 0;
+  display: flex; flex-direction: column; justify-content: space-evenly;
+  gap: 10px; padding: 4px 2px 6px;
+}
+.wow-item {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 12px 14px;
+  background: rgba(0, 212, 255, 0.03);
+  border: 1px solid rgba(0, 212, 255, 0.12);
+  border-radius: 8px;
+}
+.wow-head { display: flex; align-items: center; justify-content: space-between; }
 .wow-label { font-size: 12px; color: #7a97c5; letter-spacing: 1px; }
-.wow-values { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-.wow-col { display: flex; flex-direction: column; gap: 2px; }
+.wow-values { display: flex; align-items: center; gap: 14px; }
+.wow-col { display: flex; flex-direction: column; gap: 2px; flex: 1; }
+.wow-col:last-child { text-align: right; align-items: flex-end; }
 .wow-col-label { font-size: 10px; color: rgba(122, 151, 197, 0.7); }
 .wow-col-value { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .wow-col-value.now { color: #00d4ff; text-shadow: 0 0 12px rgba(0, 212, 255, 0.4); }
 .wow-col-value.prev { color: rgba(122, 151, 197, 0.85); }
-.wow-arrow { font-size: 12px; font-weight: 600; white-space: nowrap; }
+.wow-divider { width: 1px; height: 26px; background: rgba(0, 212, 255, 0.15); }
+.wow-arrow { font-size: 12px; font-weight: 700; white-space: nowrap; }
 .wow-arrow.up { color: #00ffa3; }
 .wow-arrow.down { color: #ff4d6b; }
 .wow-bar-track {
@@ -749,16 +770,25 @@ onBeforeUnmount(() => {
 }
 
 /* ===== 响应式 ===== */
-@media (max-width: 1100px) {
-  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
-  .row-2col { grid-template-columns: 1fr; }
-  .panel-main .chart-main { height: 300px; }
+@media (max-width: 1360px) {
+  .grid-triple { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .grid-triple .panel:nth-child(3) { grid-column: span 2; }
 }
-@media (max-width: 640px) {
+@media (max-width: 1024px) {
+  .grid-main { grid-template-columns: 1fr; }
+  .chart-main { height: 320px; }
+  .wow-wrap { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; }
+  .wow-item { flex: 1 1 260px; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 620px) {
   .kpi-grid { grid-template-columns: 1fr; }
+  .grid-triple { grid-template-columns: 1fr; }
+  .grid-triple .panel:nth-child(3) { grid-column: auto; }
+  .chart-main { height: 280px; }
+  .chart-third { height: 220px; }
   .trend-header { flex-wrap: wrap; gap: 8px; }
   .header-left, .header-right { min-width: auto; }
-  .trend-body { padding: 12px 14px 20px; }
-  .role-notice { margin: 10px 14px 0; }
+  .trend-body { padding: 10px 12px 16px; }
 }
 </style>
