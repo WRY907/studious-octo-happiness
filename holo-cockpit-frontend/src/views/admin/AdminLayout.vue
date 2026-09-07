@@ -29,6 +29,9 @@
         <router-link to="/traffic" class="nav-item" active-class="active">
           <span class="nav-icon">🛰</span>流量来源分析
         </router-link>
+        <router-link to="/profile" class="nav-item" active-class="active">
+          <span class="nav-icon">👥</span>用户画像分析
+        </router-link>
                 <router-link to="/admin/phones" class="nav-item" active-class="active">
           <span class="nav-icon">📱</span>手机型号
         </router-link>

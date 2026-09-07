@@ -81,7 +81,9 @@ export const adminApi = {
   // 热销机型分析（角色感知：MERCHANT 返回不含销售额字段）
   getHotModels: () => http.get('/admin/hotmodels'),
   // 流量来源分析（角色感知：MERCHANT 返回不含转化/金额指标）
-  getTraffic: () => http.get('/admin/traffic')
+  getTraffic: () => http.get('/admin/traffic'),
+  // 用户画像分析（角色感知：MERCHANT 返回不含消费分层/金额指标）
+  getProfile: () => http.get('/admin/profile')
 }
 
 /* ========== 数据导入（Excel） ========== */

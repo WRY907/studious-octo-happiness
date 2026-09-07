@@ -97,6 +97,7 @@
             <span class="panel-no">05</span>
             用户画像分析
             <span class="title-en">User Profile</span>
+            <router-link to="/profile" class="trend-detail-link">详情分析 →</router-link>
           </div>
           <UserProfileChart :data="userProfiles" />
         </div>

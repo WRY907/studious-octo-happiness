@@ -14,6 +14,7 @@
         <router-link v-if="!isAdmin" to="/admin/dashboard" class="back-link back-sub" title="返回管理后台">⬡ 后台</router-link>
         <router-link to="/hotmodels" class="back-link back-sub" title="热销机型分析">🏆 热销机型</router-link>
         <router-link to="/traffic" class="back-link back-sub" title="流量来源分析">🛰 流量分析</router-link>
+        <router-link to="/profile" class="back-link back-sub" title="用户画像分析">👥 用户画像</router-link>
       </div>
       <div class="header-center">
         <h1 class="page-title">

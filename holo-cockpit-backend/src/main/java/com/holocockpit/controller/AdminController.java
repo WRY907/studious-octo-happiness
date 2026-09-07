@@ -11,6 +11,7 @@ import com.holocockpit.entity.RealtimeOrder;
 import com.holocockpit.entity.SalesTrend;
 import com.holocockpit.entity.SysUser;
 import com.holocockpit.entity.TrafficSource;
+import com.holocockpit.entity.UserProfile;
 import com.holocockpit.mapper.AlertRecordMapper;
 import com.holocockpit.mapper.HotProductMapper;
 import com.holocockpit.mapper.PhoneModelMapper;
@@ -18,6 +19,7 @@ import com.holocockpit.mapper.RealtimeOrderMapper;
 import com.holocockpit.mapper.SalesTrendMapper;
 import com.holocockpit.mapper.SysUserMapper;
 import com.holocockpit.mapper.TrafficSourceMapper;
+import com.holocockpit.mapper.UserProfileMapper;
 import com.holocockpit.service.CockpitService;
 import org.springframework.web.bind.annotation.*;
 
@@ -56,6 +58,9 @@ public class AdminController {
 
     @Resource
     private TrafficSourceMapper trafficSourceMapper;
+
+    @Resource
+    private UserProfileMapper userProfileMapper;
 
     @Resource
     private CockpitService cockpitService;
@@ -355,6 +360,175 @@ public class AdminController {
         return Result.success(data);
     }
 
+    /**
+     * 用户画像分析数据：按角色差异化
+     * 公开：性别/年龄分布、年龄×性别交叉、典型画像、分龄活跃时钟、分龄兴趣雷达
+     * ADMIN 附加消费能力分层与年龄价值矩阵（金额类）
+     */
+    @GetMapping("/profile")
+    public Result<Map<String, Object>> profile(HttpServletRequest request) {
+        List<UserProfile> list = userProfileMapper.selectList(null);
+        boolean admin = isAdmin(request);
+        Map<String, Object> data = new LinkedHashMap<>();
+
+        List<UserProfile> genders = new ArrayList<>();
+        List<UserProfile> ages = new ArrayList<>();
+        for (UserProfile u : list) {
+            if ("gender".equals(u.getProfileType())) {
+                genders.add(u);
+            } else if ("age".equals(u.getProfileType())) {
+                ages.add(u);
+            }
+        }
+        ages.sort((a, b) -> Integer.compare(ageOrder(a.getProfileName()), ageOrder(b.getProfileName())));
+        data.put("genders", genders);
+        data.put("ages", ages);
+
+        long total = 0;
+        for (UserProfile g : genders) {
+            total += g.getUserCount() == null ? 0 : g.getUserCount();
+        }
+
+        // ===== 年龄×性别交叉（公开，按年龄递增的男性占比微扰推导） =====
+        double[] maleBias = {0.52, 0.54, 0.58, 0.60, 0.62, 0.64};
+        List<Map<String, Object>> ageGender = new ArrayList<>();
+        for (int i = 0; i < ages.size(); i++) {
+            UserProfile a = ages.get(i);
+            double malePct = maleBias[Math.min(i, maleBias.length - 1)];
+            long users = a.getUserCount() == null ? 0 : a.getUserCount();
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("ageRange", a.getProfileName());
+            row.put("users", users);
+            row.put("maleCount", Math.round(users * malePct));
+            row.put("femaleCount", Math.round(users * (1 - malePct)));
+            row.put("malePct", Math.round(malePct * 1000) / 10.0);
+            row.put("femalePct", Math.round((1 - malePct) * 1000) / 10.0);
+            ageGender.add(row);
+        }
+        data.put("ageGender", ageGender);
+
+        // ===== 典型用户画像（公开，主力人群自动推导） =====
+        UserProfile mainAge = ages.stream().max((x, y) -> x.getRatio().compareTo(y.getRatio())).orElse(null);
+        UserProfile mainGender = genders.stream().max((x, y) -> x.getRatio().compareTo(y.getRatio())).orElse(null);
+        if (mainAge != null && mainGender != null) {
+            Map<String, Object> persona = new LinkedHashMap<>();
+            persona.put("ageRange", mainAge.getProfileName());
+            persona.put("gender", mainGender.getProfileName());
+            persona.put("sharePct", mainAge.getRatio());
+            persona.put("users", mainAge.getUserCount());
+            // 主力人群特征标签（按主力年龄段推导）
+            String ar = mainAge.getProfileName();
+            List<String> tags = new ArrayList<>();
+            if (ar.contains("25-34") || ar.contains("35-44")) {
+                tags.add("商务精英"); tags.add("科技尝鲜"); tags.add("影像创作"); tags.add("换机主力");
+            } else if (ar.contains("18")) {
+                tags.add("潮流先锋"); tags.add("游戏娱乐"); tags.add("社交达人"); tags.add("性价比敏感");
+            } else {
+                tags.add("稳健务实"); tags.add("健康关注"); tags.add("品牌忠诚"); tags.add("家庭决策");
+            }
+            persona.put("tags", tags);
+            persona.put("activeHours", ar.contains("18") ? "20:00-次日02:00" : "12:00-14:00 / 20:00-23:00");
+            persona.put("devicePref", ar.contains("25") || ar.contains("35") ? "Mate / Pura 旗舰系列" : "nova / 畅享系列");
+            persona.put("priceBand", ar.contains("25") || ar.contains("35") ? "¥5,000+ 高端价位" : "¥2,000-4,000 主流价位");
+            data.put("persona", persona);
+        }
+
+        // ===== 分龄活跃时钟（公开：6 段人群 × 24h 活跃权重） =====
+        double[][] shapes = {
+                {0.2, 0.15, 0.1, 0.05, 0.05, 0.1, 0.3, 0.5, 0.4, 0.3, 0.3, 0.4, 0.6, 0.5, 0.4, 0.5, 0.8, 0.9, 1.0, 1.0, 1.0, 0.9, 0.7, 0.4},   // 18以下：放学后高峰
+                {0.4, 0.3, 0.2, 0.1, 0.05, 0.05, 0.15, 0.3, 0.4, 0.3, 0.3, 0.5, 0.6, 0.5, 0.4, 0.5, 0.7, 0.8, 0.9, 1.0, 1.0, 1.0, 0.9, 0.6},   // 18-24：夜猫子
+                {0.15, 0.1, 0.05, 0.05, 0.05, 0.15, 0.5, 0.8, 0.7, 0.6, 0.6, 0.8, 1.0, 0.9, 0.6, 0.6, 0.7, 0.8, 0.9, 1.0, 1.0, 0.9, 0.6, 0.3},  // 25-34：午晚双峰
+                {0.1, 0.05, 0.05, 0.05, 0.1, 0.3, 0.7, 1.0, 0.8, 0.6, 0.6, 0.7, 0.9, 0.7, 0.5, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 0.8, 0.5, 0.2},   // 35-44：早+晚
+                {0.05, 0.05, 0.05, 0.05, 0.2, 0.5, 0.9, 1.0, 0.7, 0.5, 0.5, 0.7, 0.9, 0.7, 0.5, 0.4, 0.5, 0.6, 0.7, 0.9, 1.0, 0.7, 0.4, 0.1},  // 45-54：晨型
+                {0.05, 0.05, 0.05, 0.1, 0.3, 0.7, 1.0, 0.9, 0.6, 0.5, 0.5, 0.7, 0.9, 0.8, 0.6, 0.5, 0.4, 0.4, 0.5, 0.6, 0.7, 0.5, 0.2, 0.1}    // 55+：清晨+午间
+        };
+        List<Map<String, Object>> ageHourly = new ArrayList<>();
+        for (int i = 0; i < ages.size(); i++) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("ageRange", ages.get(i).getProfileName());
+            List<Integer> hours = new ArrayList<>();
+            double[] shape = shapes[Math.min(i, shapes.length - 1)];
+            for (int h = 0; h < 24; h++) {
+                hours.add((int) Math.round(shape[h] * 100));
+            }
+            row.put("hours", hours);
+            ageHourly.add(row);
+        }
+        data.put("ageHourly", ageHourly);
+
+        // ===== 分龄兴趣雷达（公开：商家运营参考） =====
+        String[] dims = {"科技尝鲜", "商务办公", "影像创作", "游戏娱乐", "性价比", "健康运动"};
+        double[][] interestShapes = {
+                {45, 20, 35, 92, 78, 55},   // 18以下
+                {80, 40, 62, 90, 70, 58},   // 18-24
+                {88, 78, 80, 60, 52, 65},   // 25-34
+                {70, 90, 72, 42, 50, 72},   // 35-44
+                {48, 62, 45, 25, 78, 80},   // 45-54
+                {30, 25, 22, 12, 85, 88}    // 55+
+        };
+        List<Map<String, Object>> ageInterests = new ArrayList<>();
+        for (int i = 0; i < ages.size(); i++) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("ageRange", ages.get(i).getProfileName());
+            List<Integer> scores = new ArrayList<>();
+            double[] is = interestShapes[Math.min(i, interestShapes.length - 1)];
+            for (double v : is) {
+                scores.add((int) v);
+            }
+            row.put("scores", scores);
+            ageInterests.add(row);
+        }
+        data.put("interestDims", java.util.Arrays.asList(dims));
+        data.put("ageInterests", ageInterests);
+
+        if (admin) {
+            // ===== 消费能力分层（仅管理员） =====
+            String[] tiers = {"钻石用户", "铂金用户", "黄金用户", "白银用户", "普通用户"};
+            double[] tierRatio = {0.03, 0.07, 0.15, 0.25, 0.50};
+            double[] tierArpu = {15800, 8800, 4600, 2100, 680};
+            double[] tierRepurchase = {72, 58, 45, 31, 14};
+            List<Map<String, Object>> consumption = new ArrayList<>();
+            for (int i = 0; i < tiers.length; i++) {
+                Map<String, Object> row = new LinkedHashMap<>();
+                row.put("tier", tiers[i]);
+                row.put("users", Math.round(total * tierRatio[i]));
+                row.put("ratio", Math.round(tierRatio[i] * 1000) / 10.0);
+                row.put("arpu", tierArpu[i]);
+                row.put("repurchase", tierRepurchase[i]);
+                consumption.add(row);
+            }
+            data.put("consumptionTiers", consumption);
+
+            // ===== 年龄价值矩阵（仅管理员：客单价/转化/GMV 贡献） =====
+            double[] convRate = {3.8, 6.2, 9.6, 8.8, 6.5, 3.9};
+            double[] aovArr = {2199, 3299, 5899, 6599, 4999, 2799};
+            List<Map<String, Object>> ageValue = new ArrayList<>();
+            for (int i = 0; i < ages.size(); i++) {
+                long users = ages.get(i).getUserCount() == null ? 0 : ages.get(i).getUserCount();
+                double gmv = users * (convRate[Math.min(i, convRate.length - 1)] / 100.0) * aovArr[Math.min(i, aovArr.length - 1)];
+                Map<String, Object> row = new LinkedHashMap<>();
+                row.put("ageRange", ages.get(i).getProfileName());
+                row.put("users", users);
+                row.put("conversionRate", convRate[Math.min(i, convRate.length - 1)]);
+                row.put("aov", aovArr[Math.min(i, aovArr.length - 1)]);
+                row.put("gmv", Math.round(gmv));
+                ageValue.add(row);
+            }
+            data.put("ageValue", ageValue);
+        }
+        return Result.success(data);
+    }
+    /** 年龄段语义排序权重：18以下→18-24→25-34→35-44→45-54→55+（其余按首数字兜底） */
+    private int ageOrder(String name) {
+        if (name == null) return 99;
+        if (name.contains("以下") && !name.contains("以上")) return 0;
+        if (name.contains("以上")) return 60;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("^(\\d+)").matcher(name);
+        if (m.find()) {
+            return Integer.parseInt(m.group(1));
+        }
+        return 99;
+    }
     /** 24 小时分布形态：凌晨低谷、白天曲线、午间小峰、晚间 20-21 点主峰（调用方动态归一化） */
     private double hourlyShape(int h) {
         double day = 1.2 * Math.max(0, Math.sin((h - 7) / 13.0 * Math.PI));
