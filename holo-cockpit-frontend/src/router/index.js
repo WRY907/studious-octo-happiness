@@ -38,6 +38,12 @@ const routes = [
     meta: { requiresAuth: true } // 热销机型分析独立页（管理员/商家内容差异化）
   },
   {
+    path: '/traffic',
+    name: 'TrafficAnalysis',
+    component: () => import('@/views/TrafficAnalysis.vue'),
+    meta: { requiresAuth: true } // 流量来源分析独立页（管理员/商家内容差异化）
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/Login.vue')

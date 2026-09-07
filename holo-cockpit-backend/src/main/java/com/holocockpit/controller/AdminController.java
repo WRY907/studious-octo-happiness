@@ -10,12 +10,14 @@ import com.holocockpit.entity.PhoneModel;
 import com.holocockpit.entity.RealtimeOrder;
 import com.holocockpit.entity.SalesTrend;
 import com.holocockpit.entity.SysUser;
+import com.holocockpit.entity.TrafficSource;
 import com.holocockpit.mapper.AlertRecordMapper;
 import com.holocockpit.mapper.HotProductMapper;
 import com.holocockpit.mapper.PhoneModelMapper;
 import com.holocockpit.mapper.RealtimeOrderMapper;
 import com.holocockpit.mapper.SalesTrendMapper;
 import com.holocockpit.mapper.SysUserMapper;
+import com.holocockpit.mapper.TrafficSourceMapper;
 import com.holocockpit.service.CockpitService;
 import org.springframework.web.bind.annotation.*;
 
@@ -51,6 +53,9 @@ public class AdminController {
 
     @Resource
     private HotProductMapper hotProductMapper;
+
+    @Resource
+    private TrafficSourceMapper trafficSourceMapper;
 
     @Resource
     private CockpitService cockpitService;
@@ -255,6 +260,107 @@ public class AdminController {
             data.add(row);
         }
         return Result.success(data);
+    }
+    /**
+     * 流量来源分析数据：按角色差异化
+     * 公开：渠道清单/分类汇总/24小时流量脉搏；ADMIN 附加转化漏斗与渠道价值指标（金额类）
+     */
+    @GetMapping("/traffic")
+    public Result<Map<String, Object>> traffic(HttpServletRequest request) {
+        List<TrafficSource> list = trafficSourceMapper.selectList(
+                new LambdaQueryWrapper<TrafficSource>().orderByDesc(TrafficSource::getVisits));
+        boolean admin = isAdmin(request);
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("sources", list);
+
+        // ===== 分类汇总（公开） =====
+        Map<String, long[]> catVisits = new LinkedHashMap<>(); // [访问量, 渠道数]
+        Map<String, Double> catRatio = new LinkedHashMap<>();
+        for (TrafficSource t : list) {
+            long[] arr = catVisits.computeIfAbsent(t.getCategory(), k -> new long[2]);
+            arr[0] += t.getVisits() == null ? 0 : t.getVisits();
+            arr[1] += 1;
+            catRatio.merge(t.getCategory(), t.getRatio() == null ? 0 : t.getRatio().doubleValue(), Double::sum);
+        }
+        List<Map<String, Object>> summary = new ArrayList<>();
+        for (Map.Entry<String, long[]> e : catVisits.entrySet()) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("category", e.getKey());
+            row.put("visits", e.getValue()[0]);
+            row.put("channels", e.getValue()[1]);
+            row.put("share", Math.round(catRatio.getOrDefault(e.getKey(), 0.0) * 10) / 10.0);
+            summary.add(row);
+        }
+        data.put("categorySummary", summary);
+
+        // ===== 24 小时流量脉搏（公开，按总访问量加权推导） =====
+        long totalVisits = 0;
+        for (TrafficSource t : list) {
+            totalVisits += t.getVisits() == null ? 0 : t.getVisits();
+        }
+        double[] weights = new double[24];
+        double wSum = 0;
+        for (int h = 0; h < 24; h++) {
+            weights[h] = hourlyShape(h);
+            wSum += weights[h];
+        }
+        List<Map<String, Object>> pulse = new ArrayList<>();
+        for (int h = 0; h < 24; h++) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("hour", h);
+            row.put("visits", Math.round(totalVisits * weights[h] / wSum));
+            pulse.add(row);
+        }
+        data.put("hourlyPulse", pulse);
+
+        if (admin) {
+            // ===== 转化漏斗（仅管理员） =====
+            List<Map<String, Object>> funnel = new ArrayList<>();
+            String[] stages = {"访问进站", "商品详情页", "加入购物车", "提交订单", "完成支付"};
+            double[] rates = {1.0, 0.58, 0.23, 0.092, 0.076};
+            for (int i = 0; i < stages.length; i++) {
+                Map<String, Object> row = new LinkedHashMap<>();
+                row.put("stage", stages[i]);
+                row.put("count", Math.round(totalVisits * rates[i]));
+                row.put("rate", Math.round(rates[i] * 1000) / 10.0);
+                funnel.add(row);
+            }
+            data.put("funnel", funnel);
+
+            // ===== 渠道价值指标（仅管理员：转化率/客单价/获客成本/GMV/ROI） =====
+            Map<String, double[]> coef = new LinkedHashMap<>();
+            coef.put("搜索引擎", new double[]{0.028, 5899, 12});
+            coef.put("社交媒体", new double[]{0.019, 4299, 35});
+            coef.put("电商平台广告", new double[]{0.036, 4699, 28});
+            coef.put("直接访问", new double[]{0.032, 5399, 0});
+            coef.put("线下引流", new double[]{0.022, 6299, 45});
+            List<Map<String, Object>> metrics = new ArrayList<>();
+            for (Map.Entry<String, long[]> e : catVisits.entrySet()) {
+                double[] k = coef.getOrDefault(e.getKey(), new double[]{0.02, 4999, 30});
+                double gmv = e.getValue()[0] * k[0] * k[1];
+                double cost = e.getValue()[0] * k[2];
+                Map<String, Object> row = new LinkedHashMap<>();
+                row.put("category", e.getKey());
+                row.put("visits", e.getValue()[0]);
+                row.put("conversionRate", Math.round(k[0] * 1000) / 10.0);
+                row.put("aov", k[1]);
+                row.put("cac", k[2]);
+                row.put("gmv", Math.round(gmv));
+                row.put("cost", Math.round(cost));
+                row.put("roi", cost > 0 ? Math.round(gmv / cost * 10) / 10.0 : null);
+                metrics.add(row);
+            }
+            data.put("channelMetrics", metrics);
+        }
+        return Result.success(data);
+    }
+
+    /** 24 小时分布形态：凌晨低谷、白天曲线、午间小峰、晚间 20-21 点主峰（调用方动态归一化） */
+    private double hourlyShape(int h) {
+        double day = 1.2 * Math.max(0, Math.sin((h - 7) / 13.0 * Math.PI));
+        double evening = 1.9 * Math.exp(-Math.pow(h - 20.5, 2) / 6.0);
+        double lunch = 0.3 * Math.exp(-Math.pow(h - 13, 2) / 4.0);
+        return 0.8 + day + evening + lunch;
     }
     /**
      * 管理端统计：ADMIN 返回全量（含金额），MERCHANT 不含金额

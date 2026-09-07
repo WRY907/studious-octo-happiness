@@ -85,6 +85,7 @@
             <span class="panel-no">04</span>
             流量来源分析
             <span class="title-en">Traffic Sources</span>
+            <router-link to="/traffic" class="trend-detail-link">详情分析 →</router-link>
           </div>
           <TrafficBarChart :data="trafficSources" />
         </div>
