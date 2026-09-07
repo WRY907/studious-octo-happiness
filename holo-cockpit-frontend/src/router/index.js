@@ -32,6 +32,12 @@ const routes = [
     meta: { requiresAuth: true } // 销售趋势分析独立页（管理员/商家内容差异化）
   },
   {
+    path: '/hotmodels',
+    name: 'HotModels',
+    component: () => import('@/views/HotModels.vue'),
+    meta: { requiresAuth: true } // 热销机型分析独立页（管理员/商家内容差异化）
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/Login.vue')

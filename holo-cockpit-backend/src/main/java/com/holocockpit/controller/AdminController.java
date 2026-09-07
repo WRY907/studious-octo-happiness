@@ -4,12 +4,14 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.holocockpit.common.Result;
 import com.holocockpit.entity.AlertRecord;
+import com.holocockpit.entity.HotProduct;
 import com.holocockpit.entity.OverviewStats;
 import com.holocockpit.entity.PhoneModel;
 import com.holocockpit.entity.RealtimeOrder;
 import com.holocockpit.entity.SalesTrend;
 import com.holocockpit.entity.SysUser;
 import com.holocockpit.mapper.AlertRecordMapper;
+import com.holocockpit.mapper.HotProductMapper;
 import com.holocockpit.mapper.PhoneModelMapper;
 import com.holocockpit.mapper.RealtimeOrderMapper;
 import com.holocockpit.mapper.SalesTrendMapper;
@@ -46,6 +48,9 @@ public class AdminController {
 
     @Resource
     private SalesTrendMapper salesTrendMapper;
+
+    @Resource
+    private HotProductMapper hotProductMapper;
 
     @Resource
     private CockpitService cockpitService;
@@ -208,6 +213,44 @@ public class AdminController {
                 // 仅管理员可见金额类字段
                 row.put("sales", t.getSales());
                 row.put("avgOrderValue", t.getAvgOrderValue());
+            }
+            data.add(row);
+        }
+        return Result.success(data);
+    }
+
+    /**
+     * 热销机型分析数据：按角色差异化
+     * ADMIN 返回全量（含销售额/单价）；MERCHANT 隐藏销售额（仅销量/增长率/公开信息）
+     */
+    @GetMapping("/hotmodels")
+    public Result<List<Map<String, Object>>> hotModels(HttpServletRequest request) {
+        List<HotProduct> hotList = hotProductMapper.selectList(
+                new LambdaQueryWrapper<HotProduct>().orderByAsc(HotProduct::getRankNo));
+        // 机型档案（价格/评分/图片）按名称索引
+        Map<String, PhoneModel> phoneMap = new LinkedHashMap<>();
+        for (PhoneModel p : phoneModelMapper.selectList(null)) {
+            phoneMap.put(p.getModelName(), p);
+        }
+        boolean admin = isAdmin(request);
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (HotProduct h : hotList) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            PhoneModel p = phoneMap.get(h.getModelName());
+            row.put("rankNo", h.getRankNo());
+            row.put("modelName", h.getModelName());
+            row.put("salesCount", h.getSalesCount());
+            row.put("growth", h.getGrowth());
+            // 公开信息：系列/评分/图片/指导价（商城可见）
+            if (p != null) {
+                row.put("series", p.getSeries());
+                row.put("rating", p.getRating());
+                row.put("imageUrl", p.getImageUrl());
+                row.put("price", p.getPrice());
+            }
+            if (admin) {
+                // 仅管理员可见实际销售额
+                row.put("salesAmount", h.getSalesAmount());
             }
             data.add(row);
         }

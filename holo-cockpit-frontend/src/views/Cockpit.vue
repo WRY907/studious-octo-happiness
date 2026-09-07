@@ -73,6 +73,7 @@
             <span class="panel-no">03</span>
             热销机型 TOP10
             <span class="title-en">Hot Models</span>
+            <router-link to="/hotmodels" class="trend-detail-link">详情分析 →</router-link>
           </div>
           <HotProductRank :data="hotProducts" />
         </div>

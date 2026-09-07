@@ -77,7 +77,9 @@ export const adminApi = {
   // 后台统计
   getStats: () => http.get('/admin/stats'),
   // 销售趋势分析（角色感知：MERCHANT 返回不含金额字段）
-  getTrend: () => http.get('/admin/trend')
+  getTrend: () => http.get('/admin/trend'),
+  // 热销机型分析（角色感知：MERCHANT 返回不含销售额字段）
+  getHotModels: () => http.get('/admin/hotmodels')
 }
 
 /* ========== 数据导入（Excel） ========== */

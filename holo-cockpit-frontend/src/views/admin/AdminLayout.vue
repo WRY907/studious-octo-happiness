@@ -23,6 +23,9 @@
         <router-link to="/trend" class="nav-item" active-class="active">
           <span class="nav-icon">📈</span>销售趋势分析
         </router-link>
+        <router-link to="/hotmodels" class="nav-item" active-class="active">
+          <span class="nav-icon">🏆</span>热销机型分析
+        </router-link>
                 <router-link to="/admin/phones" class="nav-item" active-class="active">
           <span class="nav-icon">📱</span>手机型号
         </router-link>
