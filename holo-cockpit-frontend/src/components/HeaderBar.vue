@@ -45,8 +45,16 @@
         </div>
       </div>
 
-      <!-- 右：音量 / 静音 / 管理后台 / AI -->
+      <!-- 右：音乐播放器 / 音量 / 管理后台 / AI -->
       <div class="header-side right">
+        <div class="music-player" :title="trackTooltip">
+          <button class="icon-btn mp-btn" title="上一曲" @click="onPrevTrack">⏮</button>
+          <div class="mp-info">
+            <span class="mp-note" :class="{ playing: !muted }">♫</span>
+            <span class="mp-name">{{ trackName }}</span>
+          </div>
+          <button class="icon-btn mp-btn" title="下一曲" @click="onNextTrack">⏭</button>
+        </div>
         <div class="volume-ctl">
           <button class="icon-btn" :title="muted ? '取消静音' : '静音'" @click="onToggleMute">{{ muted ? '🔇' : '🔊' }}</button>
           <input
@@ -71,7 +79,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { audioManager } from '@/audio/manager'
 
 defineEmits(['open-ai'])
@@ -80,6 +88,24 @@ const currentTime = ref('')
 const volume = ref(Math.round(audioManager.volume * 100))
 const muted = ref(audioManager.muted)
 let timer = null
+
+/* ===== 音乐播放器 ===== */
+const trackName = ref(audioManager.currentTrack?.name || '合成音源')
+const trackTooltip = computed(() =>
+  audioManager.useFile ? `当前曲目：${trackName.value}（点击 ⏮/⏭ 切换）` : '程序化合成音源（未找到本地音乐）'
+)
+
+function onAudioTrack(e) {
+  if (e?.detail?.name) trackName.value = e.detail.name
+}
+
+function onPrevTrack() {
+  audioManager.prev()
+}
+
+function onNextTrack() {
+  audioManager.next()
+}
 
 function pad(n) { return n < 10 ? '0' + n : n }
 
@@ -99,9 +125,16 @@ function onToggleMute() {
 onMounted(() => {
   updateTime()
   timer = setInterval(updateTime, 1000)
+  // 初始化曲名 + 监听切曲事件（手动切歌 / 自动连播均会触发）
+  const cur = audioManager.currentTrack
+  if (cur?.name) trackName.value = cur.name
+  window.addEventListener('hw-audio-track', onAudioTrack)
 })
 
-onBeforeUnmount(() => { if (timer) clearInterval(timer) })
+onBeforeUnmount(() => {
+  if (timer) clearInterval(timer)
+  window.removeEventListener('hw-audio-track', onAudioTrack)
+})
 </script>
 
 <style scoped>
@@ -226,6 +259,48 @@ onBeforeUnmount(() => { if (timer) clearInterval(timer) })
   letter-spacing: 1px;
 }
 .stat-value.ok { color: var(--color-success); }
+
+/* ===== 音乐播放器 ===== */
+.music-player {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: rgba(5, 18, 42, 0.65);
+  border: 1px solid rgba(0, 229, 255, 0.2);
+  border-radius: 3px;
+  backdrop-filter: blur(6px);
+}
+.mp-btn { font-size: 11px; opacity: 0.75; }
+.mp-btn:hover { opacity: 1; }
+.mp-info {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 150px;
+  overflow: hidden;
+}
+.mp-note {
+  font-size: 12px;
+  color: var(--text-faint);
+  transition: color var(--dur-fast);
+}
+.mp-note.playing {
+  color: var(--color-primary);
+  animation: note-swing 1.2s ease-in-out infinite;
+}
+@keyframes note-swing {
+  0%, 100% { transform: rotate(-10deg) scale(1); }
+  50%      { transform: rotate(12deg) scale(1.15); }
+}
+.mp-name {
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* ===== 音量控制 ===== */
 .volume-ctl {

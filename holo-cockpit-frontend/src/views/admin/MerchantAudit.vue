@@ -263,6 +263,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { adminApi } from '@/api'
+import { audioManager } from '@/audio/manager'
 
 /* ===== 角色防护 ===== */
 const isAdmin = computed(() => localStorage.getItem('hw_role') === 'ADMIN')
@@ -371,6 +372,7 @@ async function approve(row) {
   acting.value = true
   try {
     const msg = await adminApi.approveAudit(row.id)
+    audioManager.success() // 审批通过音
     showToast(msg || '已通过', 'success')
     loadAll()
   } catch (e) {
@@ -386,6 +388,7 @@ async function confirmApproveAll() {
   acting.value = true
   try {
     const msg = await adminApi.approveAllAudit()
+    audioManager.success() // 批量通过音
     showToast(msg || '已一键通过', 'success')
     loadAll()
   } catch (e) {
@@ -409,6 +412,7 @@ async function confirmReject() {
   acting.value = true
   try {
     const msg = await adminApi.rejectAudit(row.id, reason.trim())
+    audioManager.error() // 审批拒绝音
     showToast(msg || '已拒绝', 'success')
     closeReject()
     loadAll()
@@ -425,6 +429,7 @@ async function disable(row) {
   acting.value = true
   try {
     const msg = await adminApi.disableMerchant(row.id)
+    audioManager.error() // 停用音
     showToast(msg || '已停用', 'success')
     loadAll()
   } catch (e) {
@@ -439,6 +444,7 @@ async function enable(row) {
   acting.value = true
   try {
     const msg = await adminApi.enableMerchant(row.id)
+    audioManager.success() // 启用音
     showToast(msg || '已启用', 'success')
     loadAll()
   } catch (e) {

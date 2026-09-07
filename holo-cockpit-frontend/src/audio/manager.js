@@ -1,14 +1,25 @@
 /* ============================================
-   音频管理器 v2.1
-   - 背景音乐：优先播放 public/ 下的本地音乐文件（bgm.mp3 / bgm.m4a / bgm.ogg /
-     bgm.wav / bgm.flac 按序探测，取第一个存在的，循环播放）
+   音频管理器 v3.0
+   - 背景音乐播放列表：public/audio/ 下多曲目循环连播（CC0 公有领域音乐）
+   - 曲目切换：next()/prev()，自动连播（一曲结束接下一曲）
+   - 偏好记忆：音量 / 静音 / 曲目索引 存 localStorage
    - 无本地文件时回退：Web Audio 程序化合成 BGM（双失谐锯齿 Pad + 五声音阶琶音）
-   - 交互音：click / feedback / alert（始终用合成短音）
+   - 交互音：click / feedback / alert / success / error / notify（始终用合成短音）
    - ducking：交互音播放时 BGM 自动避让
+   - 事件：切曲时派发 window 事件 hw-audio-track（供播放器 UI 同步）
    ============================================ */
 
-/* 候选本地音乐文件（public/ 下），按顺序探测第一个存在的 */
-const BGM_CANDIDATES = ['/bgm.mp3', '/bgm.m4a', '/bgm.ogg', '/bgm.wav', '/bgm.flac']
+/* 背景音乐播放列表（public/audio/ 下，CC0 公有领域，来源见 public/audio/LICENSE.md） */
+const BGM_PLAYLIST = [
+  { file: '/audio/bgm-1-tech.mp3',  name: 'Arpent · 科技创新',  composer: 'Kevin MacLeod' },
+  { file: '/audio/bgm-2-dark.mp3',  name: 'Beat One · 现代暗色', composer: 'Kevin MacLeod' },
+  { file: '/audio/bgm-3-calm.mp3',  name: 'Meditating Beat · 轻快', composer: 'Kevin MacLeod' }
+]
+
+/* 偏好存储键 */
+const LS_VOLUME = 'hw_audio_volume'
+const LS_MUTED = 'hw_audio_muted'
+const LS_TRACK = 'hw_audio_track'
 
 class AudioManager {
   constructor() {
@@ -17,6 +28,8 @@ class AudioManager {
     this.bgm = null      // 合成 BGM 总线（可被 ducking）
     this.bgMusic = null  // 本地音乐 <audio> 元素（文件模式）
     this.useFile = false // 是否使用本地音乐文件模式
+    this.playlist = []
+    this.trackIndex = 0  // 当前曲目索引
     this.volume = 0.6    // 总音量 0~1
     this.muted = false
     this._bgmBase = 1    // 合成 BGM 基准增益
@@ -24,6 +37,26 @@ class AudioManager {
     this._duckTimer = null
     this._initHandler = null
     this._visHandler = null
+    this._loadPrefs()
+  }
+
+  /* ===== 读取持久化偏好 ===== */
+  _loadPrefs() {
+    try {
+      const v = parseFloat(localStorage.getItem(LS_VOLUME))
+      if (!isNaN(v)) this.volume = Math.min(1, Math.max(0, v))
+      this.muted = localStorage.getItem(LS_MUTED) === '1'
+      const t = parseInt(localStorage.getItem(LS_TRACK), 10)
+      if (!isNaN(t) && t >= 0 && t < BGM_PLAYLIST.length) this.trackIndex = t
+    } catch (e) { /* 静默 */ }
+  }
+
+  _savePrefs() {
+    try {
+      localStorage.setItem(LS_VOLUME, String(this.volume))
+      localStorage.setItem(LS_MUTED, this.muted ? '1' : '0')
+      localStorage.setItem(LS_TRACK, String(this.trackIndex))
+    } catch (e) { /* 静默 */ }
   }
 
   /* 入口：绑定一次性 click，在用户首次交互时真正初始化（浏览器自动播放策略） */
@@ -37,12 +70,7 @@ class AudioManager {
     try {
       if (this.ctx) { this._resume(); return }
 
-      // 先探测本地音乐文件（public/ 下多格式按序探测，取第一个存在的）
-      let bgmUrl = null
-      for (const url of BGM_CANDIDATES) {
-        if (await this._probeFile(url)) { bgmUrl = url; break }
-      }
-
+      // 先创建 AudioContext（同步）：首次点击后交互音立即可用
       const AC = window.AudioContext || window.webkitAudioContext
       if (AC) {
         this.ctx = new AC()
@@ -54,20 +82,17 @@ class AudioManager {
         this.bgm.connect(this.master)
       }
 
-      if (bgmUrl) {
-        // ===== 文件模式：本地音乐循环播放 =====
-        this.useFile = true
-        this.bgMusic = new Audio(bgmUrl)
-        this.bgMusic.loop = true
-        this.bgMusic.volume = this._bgmFileVolume()
-        this.bgMusic.play().catch(() => { /* 播放失败回退合成 */ })
-        this.bgMusic.addEventListener('error', () => {
-          // 文件播放失败（损坏/格式不支持）→ 回退合成 BGM
-          this.useFile = false
-          this.bgMusic = null
-          this._startPad()
-          this._startArp()
-        })
+      // 再探测播放列表中存在的曲目（HEAD 请求，异步）
+      const available = []
+      for (const t of BGM_PLAYLIST) {
+        if (await this._probeFile(t.file)) available.push(t)
+      }
+
+      if (available.length) {
+        // ===== 文件模式：播放列表循环连播 =====
+        this.playlist = available
+        this.trackIndex = Math.min(this.trackIndex, available.length - 1)
+        this._playTrack(this.trackIndex)
       } else if (this.ctx) {
         // ===== 合成模式 =====
         this._startPad()
@@ -87,6 +112,52 @@ class AudioManager {
       }
       document.addEventListener('visibilitychange', this._visHandler)
     } catch (e) { /* 静默 */ }
+  }
+
+  /* ===== 播放指定曲目（文件模式） ===== */
+  _playTrack(index) {
+    const track = this.playlist[index]
+    if (!track) return
+    try {
+      if (this.bgMusic) {
+        this.bgMusic.pause()
+        this.bgMusic.src = track.file
+      } else {
+        this.bgMusic = new Audio(track.file)
+      }
+      this.useFile = true
+      this.trackIndex = index
+      this.bgMusic.loop = false // 播完自动接下一曲（连播）
+      this.bgMusic.volume = this._bgmFileVolume()
+      this.bgMusic.onended = () => {
+        // 一曲播完 → 自动切下一曲（循环整个播放列表）
+        if (this.useFile && !document.hidden) this._playTrack((this.trackIndex + 1) % this.playlist.length)
+      }
+      this.bgMusic.onerror = () => {
+        // 文件播放失败（损坏/格式不支持）→ 回退合成 BGM
+        this.useFile = false
+        this.bgMusic = null
+        this._startPad()
+        this._startArp()
+      }
+      this.bgMusic.play().catch(() => { /* 播放失败回退合成 */ })
+      this._savePrefs()
+      // 通知播放器 UI（曲名同步）
+      window.dispatchEvent(new CustomEvent('hw-audio-track', {
+        detail: { index, name: track.name, composer: track.composer, count: this.playlist.length }
+      }))
+    } catch (e) { /* 静默 */ }
+  }
+
+  /* ===== 切歌：下一曲 / 上一曲（循环） ===== */
+  next() {
+    if (!this.useFile || !this.playlist.length) return
+    this._playTrack((this.trackIndex + 1) % this.playlist.length)
+  }
+
+  prev() {
+    if (!this.useFile || !this.playlist.length) return
+    this._playTrack((this.trackIndex - 1 + this.playlist.length) % this.playlist.length)
   }
 
   /* 探测本地音乐文件是否存在（HEAD 请求，404 即无） */
@@ -211,6 +282,28 @@ class AudioManager {
     this._note(440, 'triangle', 0.14, 0.14, 0.32)
   }
 
+  /* ===== 成功音：大三和弦琶音上行 C5→E5→G5→C6，明亮清脆 ===== */
+  success() {
+    this._note(523.25, 'sine', 0.14, 0.12)
+    this._note(659.25, 'sine', 0.14, 0.12, 0.09)
+    this._note(783.99, 'sine', 0.14, 0.12, 0.18)
+    this._note(1046.5, 'sine', 0.12, 0.22, 0.27)
+    this._duck()
+  }
+
+  /* ===== 失败音：小二度下行双音，低沉克制 ===== */
+  error() {
+    this._note(311.13, 'sine', 0.14, 0.16)
+    this._note(233.08, 'sine', 0.14, 0.28, 0.14)
+  }
+
+  /* ===== 通知音：柔和双 ping ===== */
+  notify() {
+    this._note(880, 'sine', 0.1, 0.1)
+    this._note(1108.73, 'sine', 0.1, 0.14, 0.12)
+    this._duck()
+  }
+
   /* ===== 总音量 0~1 ===== */
   setVolume(v) {
     this.volume = Math.min(1, Math.max(0, Number(v) || 0))
@@ -220,6 +313,7 @@ class AudioManager {
       }
       if (this.bgMusic) this.bgMusic.volume = this._bgmFileVolume()
     } catch (e) { /* 静默 */ }
+    this._savePrefs()
   }
 
   /* ===== 静音切换，返回当前静音状态 ===== */
@@ -235,12 +329,22 @@ class AudioManager {
         else this.bgMusic.play().catch(() => {})
       }
     } catch (e) { /* 静默 */ }
+    this._savePrefs()
     return this.muted
   }
 
   /* ===== 当前 BGM 模式（供 UI 显示音源） ===== */
   get sourceLabel() {
-    return this.useFile ? '本地音乐' : '合成音源'
+    if (this.useFile) {
+      const t = this.playlist[this.trackIndex]
+      return t ? t.name : '本地音乐'
+    }
+    return '合成音源'
+  }
+
+  /* ===== 当前曲目元信息（供播放器 UI） ===== */
+  get currentTrack() {
+    return this.useFile ? this.playlist[this.trackIndex] || null : null
   }
 }
 

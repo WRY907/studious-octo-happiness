@@ -78,9 +78,10 @@
 </template>
 
 <script setup>
-import { ref, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { authApi } from '@/api'
+import { audioManager } from '@/audio/manager'
 import '@/styles/admin.css'
 
 const router = useRouter()
@@ -133,15 +134,22 @@ async function handleLogin() {
     localStorage.setItem('hw_role', data.role || '')
     localStorage.setItem('hw_username', data.username || username.value)
     localStorage.setItem('hw_merchant', data.merchantName || '')
+    audioManager.success() // 登录成功音
     showToast('登录成功，正在进入全息驾驶舱…', 'success')
     // 登录后直接进入全息大屏（大屏右上角可进入管理后台）
     router.push('/')
   } catch (e) {
     const msg = e?.response?.data?.message || e?.message || '登录失败，请检查用户名或密码'
+    audioManager.error() // 登录失败音（密码错误/待审/被拒/停用）
     showToast(msg, 'error')
     loading.value = false
   }
 }
+
+onMounted(() => {
+  // 首次点击（登录按钮）即初始化音频系统：登录成功/失败音效立即可用
+  audioManager.init()
+})
 
 onBeforeUnmount(() => clearTimeout(toastTimer))
 </script>

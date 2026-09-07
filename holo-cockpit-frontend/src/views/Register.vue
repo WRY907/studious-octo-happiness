@@ -177,9 +177,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onBeforeUnmount, watch } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { authApi } from '@/api'
+import { audioManager } from '@/audio/manager'
 import '@/styles/admin.css'
 
 const router = useRouter()
@@ -263,10 +264,12 @@ async function handleRegister() {
   loading.value = true
   try {
     await authApi.register(username.value, password.value, merchantName.value)
+    audioManager.notify() // 申请提交通知音
     submitted.value = { username: username.value, merchantName: merchantName.value }
     startCountdown()
   } catch (e) {
     const msg = e?.response?.data?.message || e?.message || '注册失败，请稍后重试'
+    audioManager.error() // 提交失败音
     showToast(msg, 'error')
     loading.value = false
   }
@@ -292,6 +295,11 @@ function goLogin() {
 /* 密码变更时清空确认密码（避免残留错位校验） */
 watch(password, (v) => {
   if (confirmPassword.value && confirmPassword.value !== v) confirmPassword.value = ''
+})
+
+onMounted(() => {
+  // 首次点击（提交按钮）即初始化音频系统：通知/失败音效立即可用
+  audioManager.init()
 })
 
 onBeforeUnmount(() => {
