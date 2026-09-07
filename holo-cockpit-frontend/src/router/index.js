@@ -11,8 +11,8 @@ function guard(to, from, next) {
   if (to.meta.adminOnly && role !== 'ADMIN') {
     return next('/admin/dashboard')
   }
-  // 已登录访问登录页 → 跳大屏
-  if (to.path === '/login' && token) {
+  // 已登录访问登录/注册页 → 跳大屏
+  if ((to.path === '/login' || to.path === '/register') && token) {
     return next('/')
   }
   next()
@@ -55,6 +55,11 @@ const routes = [
     component: () => import('@/views/Login.vue')
   },
   {
+    path: '/register',
+    name: 'Register',
+    component: () => import('@/views/Register.vue') // 商家注册（提交后需管理员审核）
+  },
+  {
     path: '/admin',
     component: () => import('@/views/admin/AdminLayout.vue'),
     meta: { requiresAuth: true },
@@ -80,6 +85,12 @@ const routes = [
         name: 'UserManage',
         component: () => import('@/views/admin/UserManage.vue'),
         meta: { adminOnly: true }
+      },
+      {
+        path: 'audit',
+        name: 'MerchantAudit',
+        component: () => import('@/views/admin/MerchantAudit.vue'),
+        meta: { adminOnly: true } // 商户审批（注册申请审核）
       },
       {
         path: 'import',

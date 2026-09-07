@@ -58,7 +58,10 @@ export const aiApi = {
 
 /* ========== 认证 ========== */
 export const authApi = {
-  login: (username, password) => http.post('/auth/login', { username, password })
+  login: (username, password) => http.post('/auth/login', { username, password }),
+  // 商家注册：提交后进入待审状态，需管理员审核通过后方可登录
+  register: (username, password, merchantName) =>
+    http.post('/auth/register', { username, password, merchantName })
 }
 
 /* ========== 管理后台 ========== */
@@ -83,7 +86,15 @@ export const adminApi = {
   // 流量来源分析（角色感知：MERCHANT 返回不含转化/金额指标）
   getTraffic: () => http.get('/admin/traffic'),
   // 用户画像分析（角色感知：MERCHANT 返回不含消费分层/金额指标）
-  getProfile: () => http.get('/admin/profile')
+  getProfile: () => http.get('/admin/profile'),
+  // 商户审批（仅管理员）
+  getAuditList: (params) => http.get('/admin/audit/list', { params }),
+  getAuditStats: () => http.get('/admin/audit/stats'),
+  approveAudit: (id) => http.put(`/admin/audit/${id}/approve`),
+  approveAllAudit: () => http.put('/admin/audit/approve-all'),
+  rejectAudit: (id, reason) => http.put(`/admin/audit/${id}/reject`, { reason }),
+  disableMerchant: (id) => http.put(`/admin/audit/${id}/disable`),
+  enableMerchant: (id) => http.put(`/admin/audit/${id}/enable`)
 }
 
 /* ========== 数据导入（Excel） ========== */

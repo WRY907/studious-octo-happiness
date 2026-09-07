@@ -61,6 +61,13 @@
         <span class="hint-chip">admin / admin123 管理员</span>
         <span class="hint-chip">merchant / merchant123 商家</span>
       </div>
+
+      <!-- 商家注册入口 -->
+      <div class="register-bar">
+        <span class="reg-text">想入驻平台的商家？</span>
+        <router-link to="/register" class="reg-link">🏪 商家注册</router-link>
+        <span class="reg-note">注册需管理员审核通过</span>
+      </div>
     </div>
 
     <!-- 错误/警告 toast -->
@@ -385,5 +392,42 @@ onBeforeUnmount(() => clearTimeout(toastTimer))
   border: 1px solid var(--border-faint);
   border-radius: 999px;
   background: rgba(2, 10, 26, 0.4);
+}
+
+/* ---------- 商家注册入口 ---------- */
+.register-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed rgba(0, 229, 255, 0.18);
+}
+
+.reg-text {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 1px;
+}
+
+.reg-link {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: text-shadow var(--dur-fast), transform var(--dur-fast);
+}
+
+.reg-link:hover {
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.8);
+}
+
+.reg-note {
+  font-size: 10px;
+  color: var(--text-faint);
+  letter-spacing: 0.5px;
 }
 </style>

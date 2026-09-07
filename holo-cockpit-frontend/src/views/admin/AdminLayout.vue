@@ -44,6 +44,12 @@
         <router-link v-if="isAdmin" to="/admin/users" class="nav-item" active-class="active">
           <span class="nav-icon">👥</span>用户管理
         </router-link>
+        <router-link v-if="isAdmin" to="/admin/audit" class="nav-item" active-class="active">
+          <span class="nav-icon">🛡️</span>商户审批
+          <span v-if="pendingCount > 0" class="nav-badge" :title="`${pendingCount} 条待审核申请`">
+            {{ pendingCount > 99 ? '99+' : pendingCount }}
+          </span>
+        </router-link>
       </nav>
 
       <!-- 底部用户区 -->
@@ -83,12 +89,18 @@
         </router-view>
       </div>
     </div>
+
+    <!-- 新申请到达提醒 toast -->
+    <transition name="toast">
+      <div v-if="toast" class="layout-toast" :class="`toast-${toast.type}`">{{ toast.msg }}</div>
+    </transition>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { adminApi } from '@/api'
 import '@/styles/admin.css'
 
 const route = useRoute()
@@ -99,13 +111,49 @@ const username = ref(localStorage.getItem('hw_username') || '未登录')
 const merchantName = ref(localStorage.getItem('hw_merchant') || '')
 const isAdmin = computed(() => localStorage.getItem('hw_role') === 'ADMIN')
 
+/* ===== 待审批角标（管理员）：进入轮询，跨页签同步 ===== */
+const pendingCount = ref(0)
+let pollTimer = null
+let notifiedCount = -1 // 已 toast 提醒过的数量（避免重复打扰）
+
+async function loadPending() {
+  if (!isAdmin.value) return
+  try {
+    const stats = await adminApi.getAuditStats()
+    const n = Number(stats?.pendingCount || 0)
+    pendingCount.value = n
+    // 新申请到达时提醒一次（首次加载记录基线，之后有增量才提醒）
+    if (notifiedCount >= 0 && n > notifiedCount) {
+      showToast(`📥 有 ${n - notifiedCount} 条新的商家入驻申请待审核`, 'success')
+    }
+    notifiedCount = n
+  } catch (e) { /* 静默失败：角标非关键功能 */ }
+}
+
+/* 审批页操作后即时同步角标（事件由 MerchantAudit 派发，避免 30s 轮询延迟） */
+function onAuditChanged(e) {
+  const n = Number(e?.detail || 0)
+  pendingCount.value = n
+  notifiedCount = n // 同步提醒基线，避免自己审批后误触发"新申请"提醒
+}
+
+/* ===== toast ===== */
+const toast = ref(null)
+let toastTimer = null
+function showToast(msg, type = 'success') {
+  toast.value = { msg, type }
+  clearTimeout(toastTimer)
+  toastTimer = setTimeout(() => (toast.value = null), 3200)
+}
+
 /* ===== 面包屑标题 ===== */
 const titleMap = {
   '/admin/dashboard': '数据总览',
   '/admin/phones': '手机型号管理',
   '/admin/orders': '订单管理',
   '/admin/import': 'Excel 数据导入',
-  '/admin/users': '用户管理'
+  '/admin/users': '用户管理',
+  '/admin/audit': '商户审批'
 }
 const currentTitle = computed(() => titleMap[route.path] || '管理后台')
 
@@ -136,9 +184,84 @@ function handleLogout() {
 onMounted(() => {
   updateTime()
   timer = setInterval(updateTime, 1000)
+  // 待审角标：进入加载 + 每 30 秒轮询 + 监听审批页即时同步事件
+  if (isAdmin.value) {
+    loadPending()
+    pollTimer = setInterval(loadPending, 30000)
+    window.addEventListener('hw-audit-changed', onAuditChanged)
+  }
 })
 
 onBeforeUnmount(() => {
   if (timer) clearInterval(timer)
+  if (pollTimer) clearInterval(pollTimer)
+  window.removeEventListener('hw-audit-changed', onAuditChanged)
+  clearTimeout(toastTimer)
 })
 </script>
+
+<style scoped>
+/* ===== 侧边栏待审角标 ===== */
+.nav-item {
+  position: relative;
+}
+
+.nav-badge {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  transform: translateY(-50%);
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--font-data, monospace);
+  color: #fff;
+  background: linear-gradient(135deg, #ff4d6a, #ff7a45);
+  border-radius: 999px;
+  box-shadow: 0 0 8px rgba(255, 77, 106, 0.7);
+  animation: badge-pulse 1.8s ease-in-out infinite;
+}
+
+@keyframes badge-pulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(255, 77, 106, 0.55); }
+  50%      { box-shadow: 0 0 14px rgba(255, 77, 106, 0.95); }
+}
+
+/* ===== 新申请提醒 toast（右下角，不遮内容） ===== */
+.layout-toast {
+  position: fixed;
+  right: 24px;
+  bottom: 28px;
+  z-index: 999;
+  padding: 12px 20px;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  border-radius: 8px;
+  border: 1px solid rgba(0, 229, 255, 0.4);
+  background: rgba(6, 24, 56, 0.92);
+  color: #c9e1ff;
+  box-shadow: 0 0 24px rgba(0, 229, 255, 0.25);
+  backdrop-filter: blur(8px);
+}
+
+.layout-toast.toast-error {
+  border-color: rgba(255, 77, 106, 0.5);
+  box-shadow: 0 0 24px rgba(255, 77, 106, 0.25);
+}
+
+.toast-enter-active,
+.toast-leave-active {
+  transition: all 0.3s ease;
+}
+
+.toast-enter-from,
+.toast-leave-to {
+  opacity: 0;
+  transform: translateY(12px);
+}
+</style>

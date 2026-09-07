@@ -1,6 +1,7 @@
 package com.holocockpit.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.holocockpit.common.Result;
 import com.holocockpit.entity.AlertRecord;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -556,6 +558,169 @@ public class AdminController {
             data.put("conversionRate", overview.getConversionRate());
         }
         return Result.success(data);
+    }
+
+    // ==================== 商户审批 ====================
+
+    /**
+     * 审批列表：tab=pending 待审核（按申请时间正序）/ tab=handled 已处理（按审批时间倒序）
+     */
+    @GetMapping("/audit/list")
+    public Result<Map<String, Object>> auditList(@RequestParam(defaultValue = "pending") String tab,
+                                                 @RequestParam(defaultValue = "1") long page,
+                                                 @RequestParam(defaultValue = "10") long size,
+                                                 HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return Result.error(403, "无权限，仅管理员可审批");
+        }
+        LambdaQueryWrapper<SysUser> qw = new LambdaQueryWrapper<>();
+        if ("handled".equals(tab)) {
+            qw.ne(SysUser::getStatus, "PENDING").eq(SysUser::getRole, "MERCHANT")
+                    .orderByDesc(SysUser::getAuditTime);
+        } else {
+            qw.eq(SysUser::getStatus, "PENDING").eq(SysUser::getRole, "MERCHANT")
+                    .orderByAsc(SysUser::getCreateTime);
+        }
+        Page<SysUser> result = sysUserMapper.selectPage(new Page<>(page, size), qw);
+        List<SysUser> records = result.getRecords();
+        for (SysUser u : records) {
+            u.setPassword(null);
+        }
+        return Result.success(pageOf(records, result.getTotal()));
+    }
+
+    /**
+     * 审批统计：待审/通过/拒绝/停用 数量（侧边栏角标与统计卡共用）
+     */
+    @GetMapping("/audit/stats")
+    public Result<Map<String, Object>> auditStats(HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return Result.error(403, "无权限，仅管理员可查看");
+        }
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("pendingCount", countMerchantByStatus("PENDING"));
+        data.put("approvedCount", countMerchantByStatus("APPROVED"));
+        data.put("rejectedCount", countMerchantByStatus("REJECTED"));
+        data.put("disabledCount", countMerchantByStatus("DISABLED"));
+        return Result.success(data);
+    }
+
+    /**
+     * 通过审批：PENDING → APPROVED（文案随 data 返回；显式清空旧拒绝理由）
+     */
+    @PutMapping("/audit/{id}/approve")
+    public Result<String> approve(@PathVariable Long id, HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return Result.error(403, "无权限，仅管理员可审批");
+        }
+        SysUser user = sysUserMapper.selectById(id);
+        if (user == null || !"MERCHANT".equals(user.getRole())) {
+            return Result.error(404, "申请记录不存在");
+        }
+        if (!"PENDING".equals(user.getStatus())) {
+            return Result.error(400, "该申请不在待审核状态");
+        }
+        sysUserMapper.update(null, new LambdaUpdateWrapper<SysUser>()
+                .eq(SysUser::getId, user.getId())
+                .set(SysUser::getStatus, "APPROVED")
+                .set(SysUser::getRejectReason, null)
+                .set(SysUser::getAuditTime, LocalDateTime.now()));
+        return Result.success("已通过「" + user.getMerchantName() + "」的入驻申请");
+    }
+
+    /**
+     * 一键通过全部待审申请（批量审批，单条 UPDATE 显式清空拒绝理由）
+     */
+    @PutMapping("/audit/approve-all")
+    public Result<String> approveAll(HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return Result.error(403, "无权限，仅管理员可审批");
+        }
+        List<SysUser> pending = sysUserMapper.selectList(new LambdaQueryWrapper<SysUser>()
+                .eq(SysUser::getStatus, "PENDING").eq(SysUser::getRole, "MERCHANT"));
+        if (!pending.isEmpty()) {
+            sysUserMapper.update(null, new LambdaUpdateWrapper<SysUser>()
+                    .eq(SysUser::getStatus, "PENDING").eq(SysUser::getRole, "MERCHANT")
+                    .set(SysUser::getStatus, "APPROVED")
+                    .set(SysUser::getRejectReason, null)
+                    .set(SysUser::getAuditTime, LocalDateTime.now()));
+        }
+        return Result.success("已一键通过 " + pending.size() + " 条入驻申请");
+    }
+
+    /**
+     * 拒绝审批：PENDING → REJECTED（记录理由，商家可修改资料重新申请；文案随 data 返回）
+     */
+    @PutMapping("/audit/{id}/reject")
+    public Result<String> reject(@PathVariable Long id, @RequestBody Map<String, String> body,
+                                 HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return Result.error(403, "无权限，仅管理员可审批");
+        }
+        SysUser user = sysUserMapper.selectById(id);
+        if (user == null || !"MERCHANT".equals(user.getRole())) {
+            return Result.error(404, "申请记录不存在");
+        }
+        if (!"PENDING".equals(user.getStatus())) {
+            return Result.error(400, "该申请不在待审核状态");
+        }
+        String reason = body.get("reason");
+        sysUserMapper.update(null, new LambdaUpdateWrapper<SysUser>()
+                .eq(SysUser::getId, user.getId())
+                .set(SysUser::getStatus, "REJECTED")
+                .set(SysUser::getRejectReason, reason == null ? null : reason.trim())
+                .set(SysUser::getAuditTime, LocalDateTime.now()));
+        return Result.success("已拒绝「" + user.getMerchantName() + "」的入驻申请");
+    }
+
+    /**
+     * 停用商家：APPROVED → DISABLED（该账号立即无法登录；文案随 data 返回）
+     */
+    @PutMapping("/audit/{id}/disable")
+    public Result<String> disable(@PathVariable Long id, HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return Result.error(403, "无权限，仅管理员可操作");
+        }
+        SysUser user = sysUserMapper.selectById(id);
+        if (user == null || !"MERCHANT".equals(user.getRole())) {
+            return Result.error(404, "商家账号不存在");
+        }
+        if (!"APPROVED".equals(user.getStatus())) {
+            return Result.error(400, "仅已通过的商家可停用");
+        }
+        user.setStatus("DISABLED");
+        user.setAuditTime(LocalDateTime.now());
+        sysUserMapper.updateById(user);
+        return Result.success("已停用商家「" + user.getMerchantName() + "」，该账号将无法登录");
+    }
+
+    /**
+     * 启用商家：DISABLED → APPROVED（恢复登录；文案随 data 返回）
+     */
+    @PutMapping("/audit/{id}/enable")
+    public Result<String> enable(@PathVariable Long id, HttpServletRequest request) {
+        if (!isAdmin(request)) {
+            return Result.error(403, "无权限，仅管理员可操作");
+        }
+        SysUser user = sysUserMapper.selectById(id);
+        if (user == null || !"MERCHANT".equals(user.getRole())) {
+            return Result.error(404, "商家账号不存在");
+        }
+        if (!"DISABLED".equals(user.getStatus())) {
+            return Result.error(400, "仅已停用的商家可重新启用");
+        }
+        user.setStatus("APPROVED");
+        user.setAuditTime(LocalDateTime.now());
+        sysUserMapper.updateById(user);
+        return Result.success("已启用商家「" + user.getMerchantName() + "」，该账号恢复登录");
+    }
+
+    /**
+     * 按状态统计商家数量（MERCHANT 角色）
+     */
+    private long countMerchantByStatus(String status) {
+        return sysUserMapper.selectCount(new LambdaQueryWrapper<SysUser>()
+                .eq(SysUser::getStatus, status).eq(SysUser::getRole, "MERCHANT"));
     }
 
     // ==================== 辅助 ====================

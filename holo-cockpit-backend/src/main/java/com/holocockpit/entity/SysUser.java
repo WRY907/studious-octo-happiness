@@ -40,6 +40,21 @@ public class SysUser implements Serializable {
     private String merchantName;
 
     /**
+     * 审批状态：PENDING-待审核 / APPROVED-已通过 / REJECTED-已拒绝 / DISABLED-已停用
+     */
+    private String status;
+
+    /**
+     * 拒绝理由（REJECTED 时使用）
+     */
+    private String rejectReason;
+
+    /**
+     * 最近一次审批时间
+     */
+    private LocalDateTime auditTime;
+
+    /**
      * 创建时间
      */
     private LocalDateTime createTime;
