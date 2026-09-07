@@ -1,0 +1,14 @@
+# ============================================================
+# 本地私密配置模板
+# 使用方法：复制本文件为 application-local.yml（同目录），填入你的真实配置
+# application-local.yml 已被 .gitignore 忽略，不会提交到仓库
+# ============================================================
+spring:
+  datasource:
+    username: root          # 你的 MySQL 用户名
+    password: 123456        # 你的 MySQL 密码
+
+ark:
+  # 火山方舟 API Key，获取地址：https://console.volcengine.com/ark
+  # 不配置时 AI 相关功能会提示"AI 服务暂时不可用"，其余功能不受影响
+  api-key: ark-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx

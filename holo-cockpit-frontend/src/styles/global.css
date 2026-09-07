@@ -1,0 +1,315 @@
+/* ============================================
+   全息数据驾驶舱 - 全局样式 · 设计Token v2
+   数据科技感体系：深空底色 / HUD面板 / 科技字体
+   ============================================ */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #app {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: "Microsoft YaHei", "PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #030812;
+  color: #c9e1ff;
+}
+
+:root {
+  /* ===== 色彩Token ===== */
+  --color-primary: #00e5ff;
+  --color-primary-dim: #00d4ff;
+  --color-secondary: #00a5ff;
+  --color-accent: #7b68ee;
+  --color-success: #00ffa3;
+  --color-warning: #ffcc00;
+  --color-danger: #ff4d6a;
+
+  /* ===== 背景Token ===== */
+  --bg-dark: #030812;
+  --bg-deep: #02060f;
+  --bg-panel: linear-gradient(160deg, rgba(8, 26, 60, 0.72), rgba(4, 14, 34, 0.82));
+  --bg-panel-solid: rgba(6, 20, 48, 0.78);
+  --bg-panel-hover: rgba(12, 42, 96, 0.85);
+  --bg-inset: rgba(2, 10, 26, 0.5);
+
+  /* ===== 文字Token ===== */
+  --text-primary: #f0f8ff;
+  --text-secondary: #c9e1ff;
+  --text-muted: #6f8cb8;
+  --text-faint: #46618a;
+
+  /* ===== 字体Token ===== */
+  --font-data: 'Rajdhani', 'Orbitron', 'DIN Alternate', 'Bahnschrift', monospace;
+  --font-display: 'Orbitron', 'Rajdhani', monospace;
+  --font-body: "Microsoft YaHei", "PingFang SC", sans-serif;
+
+  /* ===== 效果Token ===== */
+  --glow-cyan: 0 0 12px rgba(0, 229, 255, 0.55);
+  --glow-soft: 0 0 24px rgba(0, 229, 255, 0.18);
+  --border-cyan: rgba(0, 229, 255, 0.28);
+  --border-faint: rgba(0, 229, 255, 0.12);
+  --panel-radius: 4px;
+
+  /* ===== 节奏Token ===== */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --dur-fast: 0.25s;
+  --dur-mid: 0.5s;
+  --dur-slow: 0.8s;
+}
+
+/* 滚动条样式 */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: rgba(0, 229, 255, 0.04);
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(0, 229, 255, 0.5), rgba(123, 104, 238, 0.5));
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #00e5ff, #8b78ff);
+}
+
+::selection {
+  background: rgba(0, 229, 255, 0.3);
+  color: #fff;
+}
+
+/* 通用工具类 */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.flex-1 { flex: 1; }
+.items-center { align-items: center; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.justify-around { justify-content: space-around; }
+.gap-sm { gap: 8px; }
+.gap-md { gap: 16px; }
+.gap-lg { gap: 24px; }
+.w-full { width: 100%; }
+.h-full { height: 100%; }
+.relative { position: relative; }
+.absolute { position: absolute; }
+.text-center { text-align: center; }
+.overflow-hidden { overflow: hidden; }
+.font-data { font-family: var(--font-data); }
+
+/* ============================================
+   HUD 面板体系
+   ============================================ */
+.panel {
+  position: relative;
+  background: var(--bg-panel);
+  border: 1px solid var(--border-faint);
+  border-radius: var(--panel-radius);
+  padding: 14px 16px 12px;
+  backdrop-filter: blur(8px);
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    inset 0 1px 0 rgba(0, 229, 255, 0.08),
+    0 4px 24px rgba(0, 0, 0, 0.35);
+  transition: border-color var(--dur-mid) ease, box-shadow var(--dur-mid) ease;
+}
+
+/* hover 光晕增强（仅颜色/阴影过渡，不影响布局） */
+.panel:hover {
+  border-color: rgba(0, 229, 255, 0.35);
+  box-shadow:
+    inset 0 1px 0 rgba(0, 229, 255, 0.12),
+    0 4px 24px rgba(0, 0, 0, 0.35),
+    0 0 26px rgba(0, 229, 255, 0.14);
+}
+
+/* 顶部渐变光边 —— 面板的"能量上边" */
+.panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 8%;
+  right: 8%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.65), transparent);
+}
+
+/* 底部微光 */
+.panel::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 20%;
+  right: 20%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(123, 104, 238, 0.4), transparent);
+}
+
+/* 四角HUD装饰 */
+.panel .corner-tl,
+.panel .corner-tr,
+.panel .corner-bl,
+.panel .corner-br {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--color-primary);
+  opacity: 0.85;
+  transition: all var(--dur-fast) ease;
+}
+.panel .corner-tl { top: -1px; left: -1px; border-top: 2px solid; border-left: 2px solid; border-color: inherit; border-top-color: var(--color-primary); border-left-color: var(--color-primary); }
+.panel .corner-tr { top: -1px; right: -1px; border-top: 2px solid var(--color-primary); border-right: 2px solid var(--color-primary); }
+.panel .corner-bl { bottom: -1px; left: -1px; border-bottom: 2px solid var(--color-primary); border-left: 2px solid var(--color-primary); }
+.panel .corner-br { bottom: -1px; right: -1px; border-bottom: 2px solid var(--color-accent); border-right: 2px solid var(--color-accent); }
+
+.panel:hover .corner-tl,
+.panel:hover .corner-tr,
+.panel:hover .corner-bl,
+.panel:hover .corner-br {
+  width: 20px;
+  height: 20px;
+  opacity: 1;
+}
+
+/* 兼容旧标记 corner-tr / corner-bl（已有页面使用） */
+.panel .corner-tr { border-left: none; border-bottom: none; }
+.panel .corner-bl { border-right: none; border-top: none; }
+
+/* 面板标题 —— 带编号系统 */
+.panel-title {
+  display: flex;
+  align-items: center;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  padding-bottom: 8px;
+  position: relative;
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.07), transparent 60%);
+  /* 窄视口保护：标题单行显示不被压缩，防止换行挤占图表区导致高度塌陷 */
+  flex-shrink: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  min-width: 0;
+}
+
+.panel-title::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 16px;
+  margin-right: 10px;
+  background: linear-gradient(180deg, var(--color-primary), var(--color-accent));
+  border-radius: 1px;
+  box-shadow: var(--glow-cyan);
+}
+
+/* 标题底部刻度装饰 */
+.panel-title::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -1px;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.35), rgba(0, 229, 255, 0.03) 55%, transparent);
+}
+
+.panel-title .title-en {
+  font-family: var(--font-data);
+  font-size: 10px;
+  color: var(--text-faint);
+  font-weight: 600;
+  margin-left: 10px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* 面板编号（可选使用：在标题前加 <span class="panel-no">01</span>） */
+.panel-title .panel-no {
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: var(--color-primary);
+  opacity: 0.7;
+  margin-right: 6px;
+  letter-spacing: 1px;
+}
+
+/* 数值增长标志 */
+.growth-up { color: var(--color-success); }
+.growth-down { color: var(--color-danger); }
+
+/* ============================================
+   动画库（全部只用 transform / opacity）
+   ============================================ */
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+@keyframes pulse-scale {
+  0%, 100% { transform: scale(1); opacity: 0.7; }
+  50% { transform: scale(1.35); opacity: 1; }
+}
+
+@keyframes slide-in-left {
+  from { transform: translateX(-30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes slide-in-right {
+  from { transform: translateX(30px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes fade-in-up {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scan-move {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+}
+
+@keyframes rotate-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* 标题扫光 */
+@keyframes title-sweep {
+  0% { transform: translateX(-120%) skewX(-15deg); }
+  100% { transform: translateX(320%) skewX(-15deg); }
+}
+
+/* 边框流光（配合伪元素使用） */
+@keyframes border-flow {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.9; }
+}
+
+/* 呼吸光晕 */
+@keyframes breathe {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.85; transform: scale(1.04); }
+}
+
+/* prefers-reduced-motion 无障碍降级 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

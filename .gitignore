@@ -1,0 +1,47 @@
+# HoloCockpit - Git Ignore
+
+# ====== Java / Maven ======
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### IntelliJ IDEA ###
+.idea/
+*.iws
+*.iml
+*.ipr
+
+### Eclipse / NetBeans ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+.nb-gradle/
+build/
+out/
+
+### Logs ###
+logs/
+*.log
+
+# ====== Node / Frontend ======
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+### VS Code ###
+.vscode/
+!.vscode/extensions.json
+.DS_Store
+
+# ====== 本地私密配置（真实密码 / API Key，请勿提交）======
+holo-cockpit-backend/application-local.yml
+
+# ====== OS ======
+Thumbs.db
+Desktop.ini

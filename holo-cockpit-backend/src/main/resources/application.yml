@@ -1,0 +1,50 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: holo-cockpit-backend
+  config:
+    # 可选加载本地私密配置（该文件已被 .gitignore 忽略，用于存放真实密码 / API Key）
+    import: optional:file:./application-local.yml
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/huawei_cockpit?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: ${DB_USERNAME:root}
+    # 数据库密码：默认 123456，可通过环境变量 DB_PASSWORD 或 application-local.yml 覆盖
+    password: ${DB_PASSWORD:123456}
+  servlet:
+    multipart:
+      # Excel 导入文件大小限制
+      max-file-size: 20MB
+      max-request-size: 20MB
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+mybatis-plus:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.holocockpit.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# 火山方舟大模型配置（OpenAI 兼容接口）
+# API Key 请勿提交到仓库！通过环境变量 ARK_API_KEY 或 application-local.yml 注入，
+# 获取地址：https://console.volcengine.com/ark
+ark:
+  api-key: ${ARK_API_KEY:}
+  base-url: https://ark.cn-beijing.volces.com/api/v3
+  model: doubao-seed-2-0-lite-260215
+
+logging:
+  level:
+    com.holocockpit: debug
