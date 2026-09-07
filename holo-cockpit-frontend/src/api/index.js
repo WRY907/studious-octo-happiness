@@ -26,7 +26,7 @@ http.interceptors.response.use(
     if (err.response?.status === 401) {
       localStorage.removeItem('hw_token')
       localStorage.removeItem('hw_role')
-      if (location.hash.includes('/admin')) location.hash = '#/login'
+      if (location.hash.includes('/admin') || location.hash.includes('/trend')) location.hash = '#/login'
     }
     return Promise.reject(err)
   }
@@ -75,7 +75,9 @@ export const adminApi = {
   // 用户
   getUsers: (params) => http.get('/admin/users', { params }),
   // 后台统计
-  getStats: () => http.get('/admin/stats')
+  getStats: () => http.get('/admin/stats'),
+  // 销售趋势分析（角色感知：MERCHANT 返回不含金额字段）
+  getTrend: () => http.get('/admin/trend')
 }
 
 /* ========== 数据导入（Excel） ========== */

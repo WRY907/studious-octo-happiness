@@ -40,6 +40,7 @@
             <span class="panel-no">01</span>
             销售趋势分析
             <span class="title-en">30-Day Trend</span>
+            <router-link to="/trend" class="trend-detail-link">详情分析 →</router-link>
           </div>
           <SalesTrendChart :data="salesTrendData" />
         </div>
@@ -440,6 +441,9 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
+.panel-title .trend-detail-link {
+  margin-left: auto; font-size: 11px; letter-spacing: 1px; color: rgba(0, 212, 255, 0.75); text-decoration: none; border: 1px solid rgba(0, 212, 255, 0.3); padding: 2px 10px; border-radius: 4px; transition: all 0.25s; }
+.panel-title .trend-detail-link:hover { color: #00d4ff; border-color: rgba(0, 212, 255, 0.7); box-shadow: 0 0 10px rgba(0, 212, 255, 0.3); }
 .cockpit-container {
   width: 100%;
   height: 100%;

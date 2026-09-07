@@ -20,7 +20,10 @@
         <router-link to="/admin/dashboard" class="nav-item" active-class="active">
           <span class="nav-icon">📊</span>数据总览
         </router-link>
-        <router-link to="/admin/phones" class="nav-item" active-class="active">
+        <router-link to="/trend" class="nav-item" active-class="active">
+          <span class="nav-icon">📈</span>销售趋势分析
+        </router-link>
+                <router-link to="/admin/phones" class="nav-item" active-class="active">
           <span class="nav-icon">📱</span>手机型号
         </router-link>
         <router-link to="/admin/orders" class="nav-item" active-class="active">

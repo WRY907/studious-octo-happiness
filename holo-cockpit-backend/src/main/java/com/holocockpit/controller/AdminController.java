@@ -7,10 +7,12 @@ import com.holocockpit.entity.AlertRecord;
 import com.holocockpit.entity.OverviewStats;
 import com.holocockpit.entity.PhoneModel;
 import com.holocockpit.entity.RealtimeOrder;
+import com.holocockpit.entity.SalesTrend;
 import com.holocockpit.entity.SysUser;
 import com.holocockpit.mapper.AlertRecordMapper;
 import com.holocockpit.mapper.PhoneModelMapper;
 import com.holocockpit.mapper.RealtimeOrderMapper;
+import com.holocockpit.mapper.SalesTrendMapper;
 import com.holocockpit.mapper.SysUserMapper;
 import com.holocockpit.service.CockpitService;
 import org.springframework.web.bind.annotation.*;
@@ -41,6 +43,9 @@ public class AdminController {
 
     @Resource
     private AlertRecordMapper alertRecordMapper;
+
+    @Resource
+    private SalesTrendMapper salesTrendMapper;
 
     @Resource
     private CockpitService cockpitService;
@@ -184,6 +189,30 @@ public class AdminController {
         return Result.success(pageOf(users, result.getTotal()));
     }
 
+    /**
+     * 销售趋势分析数据：按角色差异化
+     * ADMIN 返回全量（含销售额/客单价）；MERCHANT 隐藏金额字段（仅订单/访问）
+     */
+    @GetMapping("/trend")
+    public Result<List<Map<String, Object>>> trend(HttpServletRequest request) {
+        List<SalesTrend> list = salesTrendMapper.selectList(
+                new LambdaQueryWrapper<SalesTrend>().orderByAsc(SalesTrend::getStatDate));
+        boolean admin = isAdmin(request);
+        List<Map<String, Object>> data = new ArrayList<>();
+        for (SalesTrend t : list) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("statDate", t.getStatDate() == null ? null : t.getStatDate().toString());
+            row.put("orders", t.getOrders());
+            row.put("visits", t.getVisits());
+            if (admin) {
+                // 仅管理员可见金额类字段
+                row.put("sales", t.getSales());
+                row.put("avgOrderValue", t.getAvgOrderValue());
+            }
+            data.add(row);
+        }
+        return Result.success(data);
+    }
     /**
      * 管理端统计：ADMIN 返回全量（含金额），MERCHANT 不含金额
      */

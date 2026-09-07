@@ -26,6 +26,12 @@ const routes = [
     meta: { requiresAuth: true } // 大屏需登录后查看
   },
   {
+    path: '/trend',
+    name: 'TrendAnalysis',
+    component: () => import('@/views/TrendAnalysis.vue'),
+    meta: { requiresAuth: true } // 销售趋势分析独立页（管理员/商家内容差异化）
+  },
+  {
     path: '/login',
     name: 'Login',
     component: () => import('@/views/Login.vue')
