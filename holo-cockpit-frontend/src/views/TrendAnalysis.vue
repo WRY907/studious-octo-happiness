@@ -532,15 +532,15 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* ===== 页面容器 ===== */
+/* ===== 页面容器：桌面端定高一屏，杜绝溢出/留白 ===== */
 .trend-page {
   position: relative;
-  min-height: 100vh;
+  height: 100vh;
   background: #030b22;
   color: #c9e1ff;
   display: flex;
   flex-direction: column;
-  overflow-x: hidden;
+  overflow: hidden;
   font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
 }
 
@@ -632,13 +632,17 @@ onBeforeUnmount(() => {
 }
 .retry-btn:hover { background: rgba(0, 212, 255, 0.18); box-shadow: 0 0 14px rgba(0, 212, 255, 0.3); }
 
-/* ===== 主体 ===== */
+/* ===== 主体：弹性网格行，整页恰好铺满一屏 ===== */
 .trend-body {
   position: relative; z-index: 2;
   flex: 1;
-  padding: 16px 28px 24px;
-  display: flex; flex-direction: column; gap: 16px;
-  max-width: 1680px; width: 100%; margin: 0 auto; box-sizing: border-box;
+  min-height: 0;
+  padding: 12px 28px 14px;
+  display: grid;
+  grid-template-rows: auto auto minmax(310px, 1.55fr) minmax(240px, 1fr);
+  gap: 14px;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* KPI 卡 */
@@ -714,28 +718,32 @@ onBeforeUnmount(() => {
   grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
   gap: 14px;
   align-items: stretch;
+  min-height: 0;
 }
-.chart-main { height: 380px; }
+/* 面板纵向弹性：图表填满剩余高度 */
+.panel-main, .grid-triple .panel { display: flex; flex-direction: column; min-height: 0; }
 .chart { width: 100%; min-width: 0; }
+.chart-main { flex: 1; min-height: 220px; }
 
 /* ===== 底部区：三等分 ===== */
 .grid-triple {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
+  min-height: 0;
 }
-.chart-third { height: 250px; }
+.chart-third { flex: 1; min-height: 180px; }
 
 /* ===== 周环比面板 ===== */
 .panel-wow { display: flex; flex-direction: column; min-height: 0; }
 .wow-wrap {
   flex: 1; min-height: 0;
   display: flex; flex-direction: column; justify-content: space-evenly;
-  gap: 10px; padding: 4px 2px 6px;
+  gap: 8px; padding: 2px 0 4px;
 }
 .wow-item {
-  display: flex; flex-direction: column; gap: 8px;
-  padding: 12px 14px;
+  display: flex; flex-direction: column; gap: 6px;
+  padding: 10px 12px;
   background: rgba(0, 212, 255, 0.03);
   border: 1px solid rgba(0, 212, 255, 0.12);
   border-radius: 8px;
@@ -770,25 +778,40 @@ onBeforeUnmount(() => {
 }
 
 /* ===== 响应式 ===== */
-@media (max-width: 1360px) {
-  .grid-triple { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .grid-triple .panel:nth-child(3) { grid-column: span 2; }
+/* 矮屏（笔记本）压缩间距与最小高度，保证一屏铺满不溢出 */
+@media (max-height: 900px) {
+  .trend-header { padding: 8px 20px; }
+  .trend-body { padding: 8px 20px 10px; gap: 10px; grid-template-rows: auto auto minmax(280px, 1.55fr) minmax(215px, 1fr); }
+  .kpi-grid { gap: 10px; }
+  .kpi-card { padding: 10px 14px; }
+  .kpi-icon { width: 40px; height: 40px; font-size: 20px; }
+  .kpi-value { font-size: 20px; }
+  .grid-main, .grid-triple { gap: 10px; }
+  .chart-main { min-height: 195px; }
+  .chart-third { min-height: 155px; }
+  .wow-item { padding: 8px 10px; gap: 5px; }
+  .wow-col-value { font-size: 15px; }
+  .trend-footer { padding: 8px; }
 }
-@media (max-width: 1024px) {
+/* 窄屏或极矮屏：退化为自然高度的可滚动布局 */
+@media (max-width: 1024px), (max-height: 720px) {
+  .trend-page { height: auto; min-height: 100vh; }
+  .trend-body { grid-template-rows: auto; }
   .grid-main { grid-template-columns: 1fr; }
-  .chart-main { height: 320px; }
   .wow-wrap { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; }
   .wow-item { flex: 1 1 260px; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .chart-main { min-height: 240px; }
+  .chart-third { min-height: 200px; }
 }
 @media (max-width: 620px) {
   .kpi-grid { grid-template-columns: 1fr; }
   .grid-triple { grid-template-columns: 1fr; }
   .grid-triple .panel:nth-child(3) { grid-column: auto; }
-  .chart-main { height: 280px; }
-  .chart-third { height: 220px; }
+  .chart-main { min-height: 220px; }
+  .chart-third { min-height: 190px; }
   .trend-header { flex-wrap: wrap; gap: 8px; }
   .header-left, .header-right { min-width: auto; }
-  .trend-body { padding: 10px 12px 16px; }
+  .trend-body { padding: 10px 12px 14px; }
 }
 </style>
