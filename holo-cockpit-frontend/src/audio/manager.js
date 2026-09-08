@@ -9,11 +9,16 @@
    - 事件：切曲时派发 window 事件 hw-audio-track（供播放器 UI 同步）
    ============================================ */
 
-/* 背景音乐播放列表（public/audio/ 下，科技企业风，CC-BY 来源见 LICENSE.md） */
+/* 背景音乐播放列表（public/audio/ 下，自定义曲目集，见 LICENSE.md） */
 const BGM_PLAYLIST = [
-  { file: '/audio/bgm-future-gladiator.mp3',  name: 'Future Gladiator · 成就史诗', composer: 'Kevin MacLeod' },
-  { file: '/audio/bgm-digital-lemonade.mp3', name: 'Digital Lemonade · 电子数据流', composer: 'Kevin MacLeod' },
-  { file: '/audio/bgm-inspired.mp3',        name: 'Inspired · 科技励志', composer: 'Kevin MacLeod' }
+  { file: '/audio/ghost-cities.mp3', name: 'Ghost Cities · 幽城回响', composer: 'BXRDVJA' },
+  { file: '/audio/other-worlds.mp3', name: 'Other Worlds · 异星之门', composer: 'Downtown Binary' },
+  { file: '/audio/fly-up-high.mp3', name: 'Fly up High · 展翼高飞', composer: 'Flint' },
+  { file: '/audio/to-the-stars.mp3', name: 'To the Stars · 逐星之旅', composer: 'Hotham' },
+  { file: '/audio/sultans-of-streams.mp3', name: 'Sultans of Streams · 数据洪流', composer: 'Jozeque' },
+  { file: '/audio/quantum-world.mp3', name: 'Quantum World · 量子世界', composer: 'Magiksolo' },
+  { file: '/audio/dusk.mp3', name: 'Dusk · 暮色', composer: 'nuer self' },
+  { file: '/audio/themis.mp3', name: 'Themis · 忒弥斯', composer: 'Sergey Azbel' }
 ]
 
 /* 偏好存储键 */

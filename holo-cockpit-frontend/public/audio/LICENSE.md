@@ -1,27 +1,21 @@
 # 背景音乐版权说明（Audio License）
 
-本项目背景音乐来自 **Incompetech（Kevin MacLeod）**，采用 **CC-BY 4.0** 授权，可自由用于商业与非商业场景，需保留作者署名。
+本项目背景音乐为用户提供的本地曲目集（共 8 首，免版权音乐平台下载合集）。
 
 ## 曲目清单
 
-| 文件 | 曲目 | 作曲 | 授权 |
-|------|------|------|------|
-| `bgm-future-gladiator.mp3` | Future Gladiator | Kevin MacLeod | CC-BY 4.0 |
-| `bgm-digital-lemonade.mp3` | Digital Lemonade | Kevin MacLeod | CC-BY 4.0 |
-| `bgm-inspired.mp3` | Inspired | Kevin MacLeod | CC-BY 4.0 |
+| 文件 | 曲目 | 艺术家 |
+|------|------|--------|
+| `ghost-cities.mp3` | Ghost Cities | BXRDVJA |
+| `other-worlds.mp3` | Other Worlds | Downtown Binary |
+| `fly-up-high.mp3` | Fly up High | Flint |
+| `to-the-stars.mp3` | To the Stars | Hotham |
+| `sultans-of-streams.mp3` | Sultans of Streams | Jozeque |
+| `quantum-world.mp3` | Quantum World | Magiksolo |
+| `dusk.mp3` | Dusk | nuer self |
+| `themis.mp3` | Themis | Sergey Azbel |
 
-## 来源与风格
-
-- 来源：https://incompetech.com/music/royalty-free/ （Kevin MacLeod 免版税音乐库）
-- 风格定位（科技企业风 · 成就展示 · 数据可视化）：
-  - **Future Gladiator** — 大气磅礴的成就史诗感，适合企业成果展示主背景
-  - **Digital Lemonade** — 电子数据流节奏，契合数据可视化动效
-  - **Inspired** — 上扬励志的科技氛围，适合汇报演示场景
-
-## 授权条款要点（CC-BY 4.0）
-
-可复制、修改、分发、商业使用；需署名作者（Kevin MacLeod / incompetech.com）。
-完整条款：https://creativecommons.org/licenses/by/4.0/
+> 注：曲目均为电子/氛围风格，适合数据可视化大屏场景，仅用于课程设计演示。
 
 ## 技术说明
 
