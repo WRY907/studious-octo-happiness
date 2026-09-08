@@ -9,9 +9,11 @@
    - 事件：切曲时派发 window 事件 hw-audio-track（供播放器 UI 同步）
    ============================================ */
 
-/* 背景音乐播放列表（public/audio/ 下的自定义曲目） */
+/* 背景音乐播放列表（public/audio/ 下，科技企业风，CC-BY 来源见 LICENSE.md） */
 const BGM_PLAYLIST = [
-  { file: '/audio/bgm-you-should-know.mp4', name: 'You Should Know', composer: '李长庚' }
+  { file: '/audio/bgm-future-gladiator.mp3',  name: 'Future Gladiator · 成就史诗', composer: 'Kevin MacLeod' },
+  { file: '/audio/bgm-digital-lemonade.mp3', name: 'Digital Lemonade · 电子数据流', composer: 'Kevin MacLeod' },
+  { file: '/audio/bgm-inspired.mp3',        name: 'Inspired · 科技励志', composer: 'Kevin MacLeod' }
 ]
 
 /* 偏好存储键 */

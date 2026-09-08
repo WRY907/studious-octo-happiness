@@ -110,5 +110,30 @@
     "price": 1899,
     "local": "/images/phones/changxiang-90-pro-max.png",
     "size": 129679
+  },
+  {
+    "name": "HUAWEI Mate 70 Pro",
+    "file": "mate-70-pro",
+    "local": "/images/phones/mate-70-pro.png"
+  },
+  {
+    "name": "HUAWEI Pura 80 Pro",
+    "file": "pura-80-pro",
+    "local": "/images/phones/pura-80-pro.png"
+  },
+  {
+    "name": "HUAWEI Pura 80",
+    "file": "pura-80",
+    "local": "/images/phones/pura-80.png"
+  },
+  {
+    "name": "HUAWEI nova 14 Pro",
+    "file": "nova-14-pro",
+    "local": "/images/phones/nova-14-pro.png"
+  },
+  {
+    "name": "HUAWEI nova 14",
+    "file": "nova-14",
+    "local": "/images/phones/nova-14.png"
   }
 ]

@@ -190,6 +190,7 @@
 import { ref, computed, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import * as echarts from 'echarts'
 import { adminApi } from '@/api'
+import { phoneImg } from '@/utils/phoneImages'
 
 /* ===== 登录态与角色 ===== */
 const isAdmin = computed(() => localStorage.getItem('hw_role') === 'ADMIN')
@@ -223,7 +224,7 @@ async function loadData() {
       modelName: r.modelName || '',
       series: r.series || '',
       rating: r.rating ?? null,
-      imageUrl: r.imageUrl || '',
+      imageUrl: phoneImg(r.modelName) || r.imageUrl || '', // 本地图片库优先，后端 URL 兜底
       price: r.price === null || r.price === undefined ? null : Number(r.price),
       salesCount: Number(r.salesCount || 0),
       salesAmount: r.salesAmount === null || r.salesAmount === undefined ? null : Number(r.salesAmount),

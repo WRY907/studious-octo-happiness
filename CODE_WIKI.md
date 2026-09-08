@@ -994,3 +994,48 @@ animation fill 锁定）：
 
 `public/audio/bgm-you-should-know.mp4`（李长庚《You Should Know》，AAC 音频轨，
 浏览器 `<audio>` 原生解码 107.7s）。播放列表见 `src/audio/manager.js`。
+
+---
+
+## v3 升级记录（2026-09-08 · 全页面 Motion + 真机全覆盖 + 科技 BGM）
+
+### 1. 修复：落地页大标题不可见
+
+- **根因**（浏览器像素级实测定位）：`.hero-char` 逐字动画的 `filter: blur(0px)` 残留与
+  animation 填充态将字符提升为独立合成层，导致 h1 的 `background-clip: text` 渐变
+  无法绘制到子层文字上（transparent 填充 + 无背景 = 7 字全盲）
+- **修复**：弃用渐变裁剪方案，改纯色 `#e8f7ff` + 三层 text-shadow 辉光
+  （青/蓝/紫 24px·44px·90px），逐字入场动画完整保留，100% 可见
+
+### 2. 新增：全页面动效增强层 pages-motion.css（main.js 全局引入）
+
+| 页面 | 增强效果 |
+|------|---------|
+| Login / Register | 卡片 3D 翻入（perspective rotateX + blur），输入框聚焦光效，chip/链接 hover |
+| 4 个分析页 | 页面标题辉光呼吸、KPI 卡 stagger 入场 + hover 上浮/图标脉冲、面板入场+hover 辉光、面板编号脉冲、信息条呼吸、导航链接位移辉光 |
+| admin 后台 | 卡片入场、Dashboard 统计卡 stagger、审批页统计卡、表格行 hover 扫光（青色左边条）、侧边栏导航光条+位移、按钮按压反馈、弹窗弹入 |
+| 降级 | prefers-reduced-motion 全量关闭 |
+
+### 3. 机型图片全覆盖（23 款图库）
+
+- 新爬取 5 款上代机型：Mate 70 Pro / Pura 80 Pro / Pura 80 / nova 14 Pro / nova 14（vmall 站内搜索，2s 间隔）
+- 合并项目原有 `public/phones/` 独有图：畅享 80 / 畅享 80X / Mate 80 Pro+ / Pocket 3
+- 统一图库 `public/images/phones/`（23 款）+ 新增共享匹配模块 `src/utils/phoneImages.js`
+  （模糊匹配器，供大屏 TOP10 与 HotModels 分析页共用）
+- HotModels 页 imageUrl 改为本地图库优先、后端 URL 兜底，12/12 图片全加载
+
+### 4. 背景音乐更换（科技企业风 · CC-BY）
+
+| 曲目 | 风格 | 时长 |
+|------|------|------|
+| Future Gladiator | 成就史诗（主 BGM） | 3:37 |
+| Digital Lemonade | 电子数据流 | 3:00 |
+| Inspired | 科技励志 | 4:46 |
+
+来源 incompetech.com（Kevin MacLeod，CC-BY 4.0），LICENSE.md 已更新署名。
+旧 BGM（含自定义曲目）已移除。
+
+### 5. 沉淀技能
+
+本次工作流已沉淀为可复用技能 `.trae/skills/crawl-to-cockpit/SKILL.md`
+（合规爬取边界、motion 设计模式库、工程陷阱表、Windows 编码陷阱、验证清单）。

@@ -1,0 +1,297 @@
+/* ============================================
+   全页面动效增强 · Pages Motion Plus
+   覆盖：Login/Register + 4 个分析页 + admin 后台
+   策略：页面根类前缀提高特异性，只新增属性避免与
+   scoped 样式冲突；prefers-reduced-motion 全量降级
+   ============================================ */
+
+/* ================= 通用 keyframes ================= */
+@keyframes page-enter {
+  from { opacity: 0; transform: translateY(28px); filter: blur(6px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes card-3d-in {
+  from { opacity: 0; transform: perspective(900px) rotateX(16deg) translateY(56px) scale(0.96); filter: blur(8px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(22px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes chip-glow {
+  0%, 100% { box-shadow: 0 0 0 rgba(0, 229, 255, 0); }
+  50% { box-shadow: 0 0 14px rgba(0, 229, 255, 0.18); }
+}
+@keyframes kpi-icon-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.12); }
+}
+
+/* ================= 1. 登录 / 注册页 ================= */
+.login-card, .register-card {
+  /* !important 覆盖 Login/Register.vue scoped 的 card-in 动画 */
+  animation: card-3d-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) both !important;
+}
+
+/* 输入框聚焦光效 */
+.login-page .login-field, .register-page .reg-form .login-field {
+  transition: box-shadow 0.35s, border-color 0.35s;
+}
+.login-page .login-field:focus-within {
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.45), 0 0 24px rgba(0, 229, 255, 0.15);
+}
+
+/* 演示账号 chip hover */
+.hint-chip, .acc-chip {
+  transition: all 0.3s;
+}
+.hint-chip:hover, .acc-chip:hover {
+  border-color: rgba(0, 229, 255, 0.55);
+  box-shadow: 0 0 14px rgba(0, 229, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+/* 返回链接光效位移 */
+.login-page .back-link, .register-page .back-link {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.login-page .back-link:hover, .register-page .back-link:hover {
+  transform: translateX(3px);
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.6);
+}
+
+/* ================= 2. 分析页四兄弟（trend/hot/traffic/profile） ================= */
+
+/* --- 页面标题辉光呼吸 --- */
+.trend-page .page-title .title-zh,
+.hot-page .page-title .title-zh,
+.traffic-page .page-title .title-zh,
+.profile-page .page-title .title-zh {
+  animation: title-glow 4s ease-in-out infinite;
+}
+@keyframes title-glow {
+  0%, 100% { text-shadow: 0 0 8px rgba(0, 229, 255, 0.25); }
+  50% { text-shadow: 0 0 22px rgba(0, 229, 255, 0.6), 0 0 46px rgba(0, 165, 255, 0.25); }
+}
+
+/* --- KPI 卡入场编排 + hover 增强 --- */
+.trend-page .kpi-card, .hot-page .kpi-card,
+.traffic-page .kpi-card, .profile-page .kpi-card {
+  animation: page-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s;
+}
+.trend-page .kpi-grid .kpi-card:nth-child(1), .hot-page .kpi-grid .kpi-card:nth-child(1),
+.traffic-page .kpi-grid .kpi-card:nth-child(1), .profile-page .kpi-grid .kpi-card:nth-child(1) { animation-delay: 0.15s; }
+.trend-page .kpi-grid .kpi-card:nth-child(2), .hot-page .kpi-grid .kpi-card:nth-child(2),
+.traffic-page .kpi-grid .kpi-card:nth-child(2), .profile-page .kpi-grid .kpi-card:nth-child(2) { animation-delay: 0.25s; }
+.trend-page .kpi-grid .kpi-card:nth-child(3), .hot-page .kpi-grid .kpi-card:nth-child(3),
+.traffic-page .kpi-grid .kpi-card:nth-child(3), .profile-page .kpi-grid .kpi-card:nth-child(3) { animation-delay: 0.35s; }
+.trend-page .kpi-grid .kpi-card:nth-child(4), .hot-page .kpi-grid .kpi-card:nth-child(4),
+.traffic-page .kpi-grid .kpi-card:nth-child(4), .profile-page .kpi-grid .kpi-card:nth-child(4) { animation-delay: 0.45s; }
+
+.trend-page .kpi-card:hover, .hot-page .kpi-card:hover,
+.traffic-page .kpi-card:hover, .profile-page .kpi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.45), 0 0 22px color-mix(in srgb, var(--c, #00e5ff) 28%, transparent);
+}
+.trend-page .kpi-card:hover .kpi-icon, .hot-page .kpi-card:hover .kpi-icon,
+.traffic-page .kpi-card:hover .kpi-icon, .profile-page .kpi-card:hover .kpi-icon {
+  animation: kpi-icon-pulse 1s ease-in-out infinite;
+}
+
+/* --- 面板入场 + hover 辉光 --- */
+.trend-page .panel, .hot-page .panel,
+.traffic-page .panel, .profile-page .panel {
+  animation: page-enter 0.75s cubic-bezier(0.16, 1, 0.3, 1) 0.5s both;
+  transition: box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.trend-page .panel:hover, .hot-page .panel:hover,
+.traffic-page .panel:hover, .profile-page .panel:hover {
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.3),
+    0 0 26px rgba(0, 229, 255, 0.14),
+    0 0 55px rgba(0, 165, 255, 0.08);
+  transform: translateY(-2px);
+}
+
+/* --- 面板编号辉光脉冲 --- */
+.trend-page .panel-no, .hot-page .panel-no,
+.traffic-page .panel-no, .profile-page .panel-no {
+  animation: panelno-glow-p 2.8s ease-in-out infinite;
+}
+@keyframes panelno-glow-p {
+  0%, 100% { text-shadow: 0 0 6px rgba(0, 229, 255, 0.4); }
+  50% { text-shadow: 0 0 16px rgba(0, 229, 255, 0.9), 0 0 30px rgba(0, 229, 255, 0.35); }
+}
+
+/* --- 信息条呼吸 --- */
+.trend-page .info-chip, .hot-page .info-chip,
+.traffic-page .info-chip, .profile-page .info-chip {
+  animation: chip-glow 3.5s ease-in-out infinite;
+}
+
+/* --- 返回/导航链接 hover 位移 + 辉光 --- */
+.trend-page .back-link, .hot-page .back-link,
+.traffic-page .back-link, .profile-page .back-link {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.trend-page .back-link:hover, .hot-page .back-link:hover,
+.traffic-page .back-link:hover, .profile-page .back-link:hover {
+  transform: translateY(-1px);
+  text-shadow: 0 0 12px rgba(0, 229, 255, 0.55);
+  box-shadow: 0 0 16px rgba(0, 229, 255, 0.2);
+}
+
+/* ================= 3. admin 后台 ================= */
+
+/* --- 卡片入场 + hover --- */
+.dashboard-page .admin-card, .phone-page .admin-card, .order-page .admin-card,
+.user-page .admin-card, .audit-page .admin-card, .import-page .admin-card {
+  animation: page-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: box-shadow 0.4s;
+}
+.phone-page .admin-card, .order-page .admin-card,
+.user-page .admin-card, .audit-page .admin-card, .import-page .admin-card { animation-delay: 0.1s; }
+
+.dashboard-page .admin-card:hover, .phone-page .admin-card:hover, .order-page .admin-card:hover,
+.user-page .admin-card:hover, .audit-page .admin-card:hover, .import-page .admin-card:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35), 0 0 20px rgba(0, 165, 255, 0.1);
+}
+
+/* --- Dashboard 统计卡 stagger 入场 + hover --- */
+.dashboard-page .stat-grid .stat-box {
+  animation: page-enter 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s;
+}
+.dashboard-page .stat-grid .stat-box:nth-child(1) { animation-delay: 0.1s; }
+.dashboard-page .stat-grid .stat-box:nth-child(2) { animation-delay: 0.2s; }
+.dashboard-page .stat-grid .stat-box:nth-child(3) { animation-delay: 0.3s; }
+.dashboard-page .stat-grid .stat-box:nth-child(4) { animation-delay: 0.4s; }
+.dashboard-page .stat-grid .stat-box:nth-child(5) { animation-delay: 0.5s; }
+.dashboard-page .stat-grid .stat-box:nth-child(6) { animation-delay: 0.6s; }
+.dashboard-page .stat-grid .stat-box:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.4), 0 0 18px rgba(0, 229, 255, 0.15);
+}
+
+/* --- 审批页统计卡 --- */
+.audit-page .stat-card {
+  animation: page-enter 0.65s cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: transform 0.35s, box-shadow 0.35s;
+}
+.audit-page .stat-row .stat-card:nth-child(1) { animation-delay: 0.1s; }
+.audit-page .stat-row .stat-card:nth-child(2) { animation-delay: 0.2s; }
+.audit-page .stat-row .stat-card:nth-child(3) { animation-delay: 0.3s; }
+.audit-page .stat-row .stat-card:nth-child(4) { animation-delay: 0.4s; }
+.audit-page .stat-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 26px rgba(0, 0, 0, 0.4), 0 0 18px rgba(0, 229, 255, 0.15);
+}
+
+/* --- 表格行 hover 扫光 --- */
+.phone-page .data-table tbody tr, .order-page .data-table tbody tr,
+.user-page .data-table tbody tr, .audit-page .data-table tbody tr,
+.import-page .data-table tbody tr, .dashboard-page .data-table tbody tr {
+  transition: background 0.25s, box-shadow 0.25s;
+}
+.phone-page .data-table tbody tr:hover, .order-page .data-table tbody tr:hover,
+.user-page .data-table tbody tr:hover, .audit-page .data-table tbody tr:hover,
+.import-page .data-table tbody tr:hover, .dashboard-page .data-table tbody tr:hover {
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.07), transparent 70%);
+  box-shadow: inset 3px 0 0 0 #00e5ff;
+}
+
+/* --- 侧边栏导航项光条 + 位移 --- */
+.admin-layout .admin-sidebar .nav-item {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.admin-layout .admin-sidebar .nav-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0);
+  width: 3px;
+  height: 60%;
+  border-radius: 2px;
+  background: linear-gradient(180deg, #00e5ff, #7b68ee);
+  box-shadow: 0 0 10px rgba(0, 229, 255, 0.7);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.admin-layout .admin-sidebar .nav-item:hover::before,
+.admin-layout .admin-sidebar .nav-item.router-link-active::before {
+  transform: translateY(-50%) scaleY(1);
+}
+.admin-layout .admin-sidebar .nav-item:hover {
+  transform: translateX(3px);
+  background: linear-gradient(90deg, rgba(0, 229, 255, 0.1), transparent);
+}
+
+/* --- 侧边栏 logo 呼吸 --- */
+.admin-layout .sidebar-logo {
+  animation: chip-glow 4s ease-in-out infinite;
+}
+
+/* --- 按钮统一按压反馈 --- */
+.admin-layout .btn, .phone-page .btn, .order-page .btn,
+.user-page .btn, .audit-page .btn, .import-page .btn,
+.dashboard-page .btn {
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s, filter 0.3s;
+}
+.admin-layout .btn:hover, .phone-page .btn:hover, .order-page .btn:hover,
+.user-page .btn:hover, .audit-page .btn:hover, .import-page .btn:hover,
+.dashboard-page .btn:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.12);
+}
+.admin-layout .btn:active, .phone-page .btn:active, .order-page .btn:active,
+.user-page .btn:active, .audit-page .btn:active, .import-page .btn:active,
+.dashboard-page .btn:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* --- 弹窗弹入 --- */
+.modal-box {
+  animation: modal-in 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* --- 分页按钮 --- */
+.page-btn {
+  transition: all 0.25s;
+}
+.page-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 0 12px rgba(0, 229, 255, 0.25);
+}
+
+/* --- 数据导入步骤条 --- */
+.import-page .step-item {
+  transition: all 0.35s;
+}
+.import-page .step-item:hover {
+  transform: translateY(-2px);
+  text-shadow: 0 0 10px rgba(0, 229, 255, 0.5);
+}
+
+/* ================= 4. 降级（prefers-reduced-motion） ================= */
+@media (prefers-reduced-motion: reduce) {
+  .login-card, .register-card,
+  .trend-page .kpi-card, .hot-page .kpi-card,
+  .traffic-page .kpi-card, .profile-page .kpi-card,
+  .trend-page .panel, .hot-page .panel,
+  .traffic-page .panel, .profile-page .panel,
+  .dashboard-page .admin-card, .phone-page .admin-card, .order-page .admin-card,
+  .user-page .admin-card, .audit-page .admin-card, .import-page .admin-card,
+  .dashboard-page .stat-grid .stat-box, .audit-page .stat-card,
+  .modal-box, .info-chip, .sidebar-logo {
+    animation: none !important;
+  }
+  .trend-page .kpi-card:hover, .hot-page .kpi-card:hover,
+  .traffic-page .kpi-card:hover, .profile-page .kpi-card:hover,
+  .trend-page .panel:hover, .hot-page .panel:hover,
+  .traffic-page .panel:hover, .profile-page .panel:hover,
+  .dashboard-page .stat-grid .stat-box:hover, .audit-page .stat-card:hover {
+    transform: none !important;
+  }
+}

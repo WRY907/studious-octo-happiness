@@ -35,35 +35,11 @@
 
 <script setup>
 import { computed } from 'vue'
+import { phoneImg } from '@/utils/phoneImages'
 
 const props = defineProps({ data: { type: Array, default: () => [] } })
 
-/* ===== 机型图库（华为商城爬取的真实机型图片，本地 /images/phones/） ===== */
-const PHONE_LIBRARY = [
-  { key: 'mate-xt2', match: ['mate xt 2', 'mate xt'] },
-  { key: 'mate-x7', match: ['mate x7'] },
-  { key: 'pura-x-max', match: ['pura x max'] },
-  { key: 'mate-x6', match: ['mate x6'] },
-  { key: 'mate-80-rs', match: ['mate 80 rs'] },
-  { key: 'mate-80-pro-max', match: ['mate 80 pro max'] },
-  { key: 'pura-x-view', match: ['pura x view'] },
-  { key: 'mate-80-pro', match: ['mate 80 pro'] },
-  { key: 'pura-90-pro-max', match: ['pura 90 pro max'] },
-  { key: 'pura-90-pro', match: ['pura 90 pro'] },
-  { key: 'mate-80', match: ['mate 80'] },
-  { key: 'nova-16-se', match: ['nova 16 se'] },
-  { key: 'nova-16', match: ['nova 16'] },
-  { key: 'changxiang-90-pro-max', match: ['畅享 90', '畅享90'] }
-]
 
-/* 机型名 → 本地图片路径（无匹配返回 null） */
-function phoneImg(modelName) {
-  const n = String(modelName || '').toLowerCase()
-  for (const p of PHONE_LIBRARY) {
-    if (p.match.some(m => n.includes(m))) return '/images/phones/' + p.key + '.png'
-  }
-  return null
-}
 
 const displayList = computed(() => (props.data || []).slice(0, 10))
 

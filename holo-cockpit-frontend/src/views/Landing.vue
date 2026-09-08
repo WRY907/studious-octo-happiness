@@ -725,13 +725,13 @@ onBeforeUnmount(() => {
   line-height: 1.08;
   letter-spacing: 6px;
   margin: 0 0 28px;
-  /* 三段均匀过渡 + 提亮末端：底部对比度 ≥8:1，避免下半部发暗发糊 */
-  background: linear-gradient(180deg, #ffffff 0%, #a8e6ff 48%, #78b4ff 100%);
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  /* 辉光减弱：小半径、轻偏移，避免文字下缘雾化 */
-  filter: drop-shadow(0 3px 16px rgba(0, 165, 255, 0.18));
+  /* 纯色 + 多层辉光（弃用 background-clip:text 渐变：
+     逐字动画的合成层提升会导致渐变裁剪失效、文字透明不可见——实测复现） */
+  color: #e8f7ff;
+  text-shadow:
+    0 0 24px rgba(0, 229, 255, 0.5),
+    0 2px 44px rgba(0, 165, 255, 0.35),
+    0 0 90px rgba(123, 104, 238, 0.25);
 }
 
 .hero-char {
