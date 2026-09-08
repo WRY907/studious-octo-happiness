@@ -349,7 +349,8 @@ class AudioManager {
 
   /* ===== 当前曲目元信息（供播放器 UI） ===== */
   get currentTrack() {
-    return this.useFile ? this.playlist[this.trackIndex] || null : null
+    /* 乐观返回：探测完成前也显示待播曲名（避免冷启动误显示合成音源） */
+    return this.playlist[this.trackIndex] || BGM_PLAYLIST[this.trackIndex] || null
   }
 }
 

@@ -19,7 +19,7 @@
       <div class="header-center">
         <h1 class="page-title">
           <span class="title-zh">{{ isAdmin ? '销售趋势分析' : '订单趋势分析' }}</span>
-          <span class="title-en">SALES&nbsp;TREND&nbsp;ANALYSIS</span>
+          <span class="title-en">{{ isAdmin ? 'SALES&nbsp;TREND&nbsp;ANALYSIS' : 'ORDER&nbsp;TREND&nbsp;ANALYSIS' }}</span>
         </h1>
       </div>
       <div class="header-right">

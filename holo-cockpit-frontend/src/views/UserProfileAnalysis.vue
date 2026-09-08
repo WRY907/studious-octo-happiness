@@ -788,7 +788,7 @@ function radarOption() {
       indicator: indicators,
       center: ['50%', '47%'],
       radius: '60%',
-      splitNumber: 4,
+      splitNumber: 5,
       axisName: { color: '#a8c4e8', fontSize: 10.5 },
       splitLine: { lineStyle: { color: 'rgba(58, 90, 140, 0.35)' } },
       splitArea: { areaStyle: { color: ['rgba(0,212,255,0.02)', 'rgba(0,212,255,0.05)'] } },

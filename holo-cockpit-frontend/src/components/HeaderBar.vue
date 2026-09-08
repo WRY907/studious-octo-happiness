@@ -39,7 +39,7 @@
         <div class="sub-title">
           <span class="line"></span>
           <span class="diamond"></span>
-          <span class="text">HUAWEI DATA COCKPIT · 陕西省业务全景</span>
+          <span class="text">HUAWEI DATA COCKPIT · 业务数据全景</span>
           <span class="diamond"></span>
           <span class="line"></span>
         </div>

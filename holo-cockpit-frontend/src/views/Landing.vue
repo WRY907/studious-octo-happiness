@@ -885,8 +885,11 @@ onBeforeUnmount(() => {
 
 @media (max-width: 900px) {
   .hero-chip { display: none; }
-  .nav-links { display: none; }
-  .nav { padding: 14px 20px; }
+  /* 窄屏压缩导航而非隐藏（保留锚点可达性） */
+  .nav { padding: 12px 16px; }
+  .nav-links { gap: 14px; }
+  .nav-link { font-size: 12px; letter-spacing: 0.5px; }
+  .nav-login { display: none; }
 }
 
 /* 滚动提示 */
