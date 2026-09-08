@@ -725,11 +725,13 @@ onBeforeUnmount(() => {
   line-height: 1.08;
   letter-spacing: 6px;
   margin: 0 0 28px;
-  background: linear-gradient(180deg, #f0f8ff 20%, #7fd4ff 55%, #4a7ec9 100%);
+  /* 三段均匀过渡 + 提亮末端：底部对比度 ≥8:1，避免下半部发暗发糊 */
+  background: linear-gradient(180deg, #ffffff 0%, #a8e6ff 48%, #78b4ff 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  filter: drop-shadow(0 8px 40px rgba(0, 165, 255, 0.25));
+  /* 辉光减弱：小半径、轻偏移，避免文字下缘雾化 */
+  filter: drop-shadow(0 3px 16px rgba(0, 165, 255, 0.18));
 }
 
 .hero-char {
@@ -750,11 +752,13 @@ onBeforeUnmount(() => {
 
 .hero-sub-en {
   font-family: 'Orbitron', monospace;
-  font-size: clamp(13px, 1.6vw, 17px);
+  font-size: clamp(15px, 2vw, 20px);
+  font-weight: 600;
   letter-spacing: 5px;
-  color: #00e5ff;
+  color: #33e5ff;
   min-height: 26px;
   margin-bottom: 18px;
+  text-shadow: 0 0 18px rgba(0, 229, 255, 0.35);
 }
 .type-caret {
   display: inline-block;
