@@ -13,18 +13,11 @@
         :class="{ active: mode === 'china' }"
         @click="setMode('china')"
       >全国</button>
-      <span class="toggle-swap">⇄</span>
-      <button
-        class="toggle-btn toggle-3d font-data"
-        :class="{ active: mode === 'map3d' }"
-        @click="setMode('map3d')"
-      >3D孪生</button>
     </div>
 
-    <!-- v-if(:key) + transition 切换淡入；3D 孪生模式独立组件 -->
+    <!-- v-if(:key) + transition 切换淡入 -->
     <div class="map-stage">
-      <ThreeMap3D v-if="mode === 'map3d'" :city-data="cityData" :masked="masked" />
-      <transition v-else name="map-fade" mode="out-in" appear @after-enter="renderMap">
+      <transition name="map-fade" mode="out-in" appear @after-enter="renderMap">
         <div :key="mode" ref="chartEl" class="map-chart"></div>
       </transition>
       <div v-if="loading" class="map-loading font-data">MAP LOADING…</div>
@@ -36,7 +29,6 @@
 <script setup>
 import { ref, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import * as echarts from 'echarts'
-import ThreeMap3D from './ThreeMap3D.vue'
 
 const props = defineProps({
   // 全国维度：[{province, sales, orders, users}]
@@ -254,7 +246,6 @@ function setMode(m) {
 
 /* 在当前 chartEl 上初始化并渲染（同模式数据更新仅 setOption，避免闪烁） */
 async function renderMap() {
-  if (mode.value === 'map3d') return // 3D 模式由 ThreeMap3D 组件自渲染
   const m = mode.value
   loading.value = true
   loadError.value = ''
@@ -343,18 +334,6 @@ onBeforeUnmount(() => {
   transition: all var(--dur-fast);
 }
 .toggle-btn:hover { color: var(--color-primary); }
-/* 3D 孪生按钮：青紫渐变强调 */
-.toggle-3d.active {
-  background: linear-gradient(135deg, rgba(0, 229, 255, 0.28), rgba(123, 104, 238, 0.28));
-  border-color: rgba(123, 104, 238, 0.65);
-  color: #e4d9ff;
-  text-shadow: 0 0 8px rgba(123, 104, 238, 0.8);
-  box-shadow: 0 0 14px rgba(123, 104, 238, 0.35), inset 0 0 8px rgba(123, 104, 238, 0.15);
-}
-.toggle-3d.active::before {
-  content: '◈ ';
-  color: #b9a8ff;
-}
 .toggle-btn.active {
   background: linear-gradient(135deg, rgba(0, 229, 255, 0.28), rgba(123, 104, 238, 0.28));
   color: #fff;
