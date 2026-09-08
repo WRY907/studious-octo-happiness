@@ -1039,3 +1039,48 @@ animation fill 锁定）：
 
 本次工作流已沉淀为可复用技能 `.trae/skills/crawl-to-cockpit/SKILL.md`
 （合规爬取边界、motion 设计模式库、工程陷阱表、Windows 编码陷阱、验证清单）。
+
+---
+
+## v4 升级记录（2026-09-08 · 3D 数字孪生地图）
+
+### 技术来源
+
+学习 [ThreeMaps](https://github.com/wangscript007/ThreeMaps)（Vue3+Three.js 大屏，Apache-2.0）
+的 mini3d 引擎架构：ExtrudeMap（Mercator 投影 → THREE.Shape → ExtrudeGeometry 双材质挤出）、
+FlyLine（QuadraticBezierCurve3 + TubeGeometry + AdditiveBlending）、CSS2D 标签模式。
+结合 ThingJS/RAYDATA/DataV 数字孪生视觉风格，**自研零依赖实现**（不引入 d3-geo/gsap，
+投影自算，动画原生 rAF）。
+
+### 新增组件：ThreeMap3D.vue（大屏地图第三模式）
+
+地图切换器扩展为三模式：**陕西省(2D) ⇄ 全国(2D) ⇄ 3D孪生**，原 2D 功能不受影响。
+
+| 模块 | 实现 |
+|------|------|
+| 3D 挤出地图 | 陕西 10 地市 geojson → 自实现 Mercator 投影（包围盒自适应居中缩放）→ ExtrudeGeometry（倒角）+ 双材质（顶面/侧面）+ 烘焙 rotateX 躺平 |
+| 边界发光线 | Edges 顶点折线（LineSegments 青色） |
+| 销售光柱 | CylinderGeometry 顶点色渐变（底深顶亮）+ AdditiveBlending，高度=销售额归一化，入场 stagger 生长 |
+| 顶端呼吸光点 | Sphere + 正弦浮动/透明度呼吸 |
+| 城市底座环 | RingGeometry 发光环 |
+| 飞线流光 | 各地市→西安二次贝塞尔 + 轨迹线 + 流光球沿曲线循环 |
+| 西安金色锚 | 金色光柱/标签 + 双扫描波扩散 |
+| CSS2D 标签 | CSS2DRenderer 市名+销售额（masked 脱敏），位置随光柱高度 |
+| hover 交互 | Raycaster 拾取城市 → 顶面高亮 + tooltip（销售/订单/用户） |
+| 相机控制 | OrbitControls 阻尼 + 俯角限制 + 入场拉近动画 |
+| 氛围 | 260 星尘粒子（青紫渐变）+ 环境光/平行光 |
+
+### 工程要点（踩坑沉淀）
+
+- **CSS2DRenderer 的 DOM 是 JS 创建的，不带 scoped 属性**——scoped CSS 选择器不匹配导致
+  标签层定位失效（标签整体偏移出视口被裁剪）。修复：定位样式必须内联
+  （`position:absolute; top:0; left:0`）
+- geojson 复用 2D 模式的本地 `/shaanxi.json`（无需额外爬取，合规）
+- 数据变化时数据层销毁重建（geometry/material/CSS2D DOM 全清理）；组件卸载全场景 dispose
+- resize 用 ResizeObserver + 尺寸守卫（复用地图塌陷修复经验）
+
+### 浏览器实测
+
+- 拖拽旋转（相机指纹变化 -95%）、hover tooltip（宝鸡数据正确）、三模式闭环切换零错误
+- 标签位置与销售额严格正相关（西安 337 万最靠上）、地理方位正确（宝鸡西/商洛东）
+- WebGL 活跃渲染、控制台无应用错误
