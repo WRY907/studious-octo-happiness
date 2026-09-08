@@ -9,6 +9,9 @@
       <div class="rank-no" :class="'r' + ((item.rankNo || idx + 1))">
         {{ item.rankNo || idx + 1 }}
       </div>
+      <div class="rank-img-wrap" v-if="phoneImg(item.modelName)">
+        <img :src="phoneImg(item.modelName)" :alt="item.modelName" class="rank-img" draggable="false" />
+      </div>
       <div class="rank-info">
         <div class="rank-name">{{ item.modelName }}</div>
         <div class="rank-bar-wrap">
@@ -34,6 +37,33 @@
 import { computed } from 'vue'
 
 const props = defineProps({ data: { type: Array, default: () => [] } })
+
+/* ===== 机型图库（华为商城爬取的真实机型图片，本地 /images/phones/） ===== */
+const PHONE_LIBRARY = [
+  { key: 'mate-xt2', match: ['mate xt 2', 'mate xt'] },
+  { key: 'mate-x7', match: ['mate x7'] },
+  { key: 'pura-x-max', match: ['pura x max'] },
+  { key: 'mate-x6', match: ['mate x6'] },
+  { key: 'mate-80-rs', match: ['mate 80 rs'] },
+  { key: 'mate-80-pro-max', match: ['mate 80 pro max'] },
+  { key: 'pura-x-view', match: ['pura x view'] },
+  { key: 'mate-80-pro', match: ['mate 80 pro'] },
+  { key: 'pura-90-pro-max', match: ['pura 90 pro max'] },
+  { key: 'pura-90-pro', match: ['pura 90 pro'] },
+  { key: 'mate-80', match: ['mate 80'] },
+  { key: 'nova-16-se', match: ['nova 16 se'] },
+  { key: 'nova-16', match: ['nova 16'] },
+  { key: 'changxiang-90-pro-max', match: ['畅享 90', '畅享90'] }
+]
+
+/* 机型名 → 本地图片路径（无匹配返回 null） */
+function phoneImg(modelName) {
+  const n = String(modelName || '').toLowerCase()
+  for (const p of PHONE_LIBRARY) {
+    if (p.match.some(m => n.includes(m))) return '/images/phones/' + p.key + '.png'
+  }
+  return null
+}
 
 const displayList = computed(() => (props.data || []).slice(0, 10))
 
@@ -110,6 +140,28 @@ function formatNum(v) { return Number(v || 0).toLocaleString() }
 .rank-no.r2 { background: linear-gradient(135deg, #e8e8e8, #a0a0a0); box-shadow: 0 0 8px rgba(192, 192, 192, 0.4); color: #222; }
 .rank-no.r3 { background: linear-gradient(135deg, #e8a36a, #8b5a2b); box-shadow: 0 0 8px rgba(205, 127, 50, 0.4); }
 
+.rank-img-wrap {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  background: radial-gradient(circle at 50% 40%, rgba(0, 165, 255, 0.12), transparent 70%);
+  overflow: hidden;
+}
+.rank-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.5));
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), filter 0.35s;
+}
+.rank-item:hover .rank-img {
+  transform: scale(1.18) rotate(-2deg);
+  filter: drop-shadow(0 4px 14px rgba(0, 229, 255, 0.35));
+}
 .rank-info { flex: 1; min-width: 0; }
 .rank-name {
   font-size: 13px;

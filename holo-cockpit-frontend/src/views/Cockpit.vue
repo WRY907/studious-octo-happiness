@@ -135,6 +135,7 @@ import AlertToast from '@/components/AlertToast.vue'
 import ParticleBackground from '@/components/ParticleBackground.vue'
 import MatrixRain from '@/components/MatrixRain.vue'
 import ScanOverlay from '@/components/ScanOverlay.vue'
+import '@/styles/cockpit-motion.css' // 大屏动效增强层
 
 /* ============================================================
    Mock 数据（后端不可用时降级）：陕西 55% 权重、西安 38% 领跑

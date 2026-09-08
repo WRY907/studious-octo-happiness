@@ -1,0 +1,142 @@
+/* ============================================
+   大屏动效增强 · Motion Plus
+   无侵入叠加层：corner 呼吸 / hover 辉光 /
+   网格漂移 / 色相流转 / 编号脉冲 / 跑马灯流光
+   注：.cockpit-container 前缀用于提高特异性
+   ============================================ */
+
+/* ===== 1. 面板 hover：更深辉光 + 上浮 ===== */
+.cockpit-container .panel {
+  transition: box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1), transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.cockpit-container .panel:hover {
+  box-shadow:
+    0 0 0 1px rgba(0, 229, 255, 0.35),
+    0 0 28px rgba(0, 229, 255, 0.16),
+    0 0 60px rgba(0, 165, 255, 0.1),
+    inset 0 0 22px rgba(0, 229, 255, 0.05);
+  /* !important 覆盖 panel-enter 动画的 fill 锁定 */
+  transform: translateY(-2px) !important;
+}
+
+/* ===== 2. 四角呼吸闪烁（HUD 括号活性化） ===== */
+@keyframes corner-breathe {
+  0%, 100% { filter: drop-shadow(0 0 2px rgba(0, 229, 255, 0.35)); opacity: 0.85; }
+  50% { filter: drop-shadow(0 0 9px rgba(0, 229, 255, 0.9)); opacity: 1; }
+}
+.cockpit-container .panel .corner-tl,
+.cockpit-container .panel .corner-tr,
+.cockpit-container .panel .corner-bl,
+.cockpit-container .panel .corner-br {
+  animation: corner-breathe 3.2s ease-in-out infinite;
+}
+.cockpit-container .panel .corner-tr { animation-delay: 1.1s; }
+.cockpit-container .panel .corner-bl { animation-delay: 1.1s; }
+.cockpit-container .panel .corner-br { animation-delay: 0.6s; animation-duration: 3.6s; }
+
+@keyframes corner-rush {
+  0%, 100% { filter: drop-shadow(0 0 4px rgba(0, 229, 255, 0.8)); }
+  50% { filter: drop-shadow(0 0 14px rgba(0, 229, 255, 1)); }
+}
+.cockpit-container .panel:hover .corner-tl,
+.cockpit-container .panel:hover .corner-tr,
+.cockpit-container .panel:hover .corner-bl,
+.cockpit-container .panel:hover .corner-br {
+  animation: corner-rush 1s ease-in-out infinite;
+}
+
+/* ===== 3. 面板编号（01/02/03…）辉光脉冲 ===== */
+@keyframes panelno-glow {
+  0%, 100% { text-shadow: 0 0 6px rgba(0, 229, 255, 0.4); }
+  50% { text-shadow: 0 0 16px rgba(0, 229, 255, 0.95), 0 0 30px rgba(0, 229, 255, 0.4); }
+}
+.cockpit-container .panel-title .panel-no {
+  animation: panelno-glow 2.8s ease-in-out infinite;
+}
+
+/* ===== 4. 背景网格缓慢漂移 ===== */
+@keyframes grid-drift {
+  0% { background-position: 0 0, 0 0; }
+  100% { background-position: 44px 44px, 44px 44px; }
+}
+.cockpit-container .bg-effects .grid-bg {
+  animation: grid-drift 26s linear infinite;
+}
+
+/* ===== 5. 径向背景色相流转（微妙氛围变化） ===== */
+@keyframes ambient-hue {
+  0%, 100% { filter: hue-rotate(0deg) saturate(1); }
+  33% { filter: hue-rotate(14deg) saturate(1.15); }
+  66% { filter: hue-rotate(-10deg) saturate(1.08); }
+}
+.cockpit-container .bg-effects .radial-bg {
+  animation: ambient-hue 22s ease-in-out infinite;
+}
+
+/* ===== 6. 统计卡 hover 微升辉光 ===== */
+.cockpit-container .col-left .stat-grid > * {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s ease-out;
+}
+.cockpit-container .col-left .stat-grid > *:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0 18px rgba(0, 229, 255, 0.28), 0 0 40px rgba(0, 165, 255, 0.12);
+}
+
+/* ===== 7. 底部跑马灯边框流光 ===== */
+@keyframes marquee-sweep {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.cockpit-container .marquee-enter {
+  position: relative;
+}
+.cockpit-container .marquee-enter::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0, 229, 255, 0.6), rgba(123, 104, 238, 0.6), transparent);
+  background-size: 200% 100%;
+  animation: marquee-sweep 4.5s linear infinite;
+}
+
+/* ===== 8. 详情链接 hover：辉光 + 字距推进 ===== */
+.cockpit-container .panel-title .trend-detail-link {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.cockpit-container .panel-title .trend-detail-link:hover {
+  box-shadow: 0 0 14px rgba(0, 212, 255, 0.4), inset 0 0 8px rgba(0, 212, 255, 0.1);
+  transform: translateY(-1px);
+  letter-spacing: 1.5px;
+}
+
+/* ===== 9. 主视觉容器辉光呼吸（叠加入场动画） ===== */
+@keyframes hero-aura {
+  0%, 100% { filter: drop-shadow(0 6px 22px rgba(0, 165, 255, 0.2)); }
+  50% { filter: drop-shadow(0 6px 34px rgba(0, 229, 255, 0.38)); }
+}
+.cockpit-container .col-center .hero-wrap {
+  animation: panel-enter 0.7s var(--ease-out) both, hero-aura 4.5s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 95ms + 0.15s), 1.2s;
+}
+
+/* ===== 10. 减少动态偏好降级 ===== */
+@media (prefers-reduced-motion: reduce) {
+  .cockpit-container .panel .corner-tl,
+  .cockpit-container .panel .corner-tr,
+  .cockpit-container .panel .corner-bl,
+  .cockpit-container .panel .corner-br,
+  .cockpit-container .panel-title .panel-no,
+  .cockpit-container .bg-effects .grid-bg,
+  .cockpit-container .bg-effects .radial-bg,
+  .cockpit-container .col-center .hero-wrap,
+  .cockpit-container .marquee-enter::after {
+    animation: none !important;
+  }
+  .cockpit-container .panel:hover,
+  .cockpit-container .col-left .stat-grid > *:hover {
+    transform: none !important;
+  }
+}

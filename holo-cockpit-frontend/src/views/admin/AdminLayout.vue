@@ -75,7 +75,7 @@
           </span>
         </div>
         <div class="header-right">
-          <router-link to="/" class="link-bigscreen">🖥 查看大屏</router-link>
+          <router-link to="/cockpit" class="link-bigscreen">🖥 查看大屏</router-link>
           <span class="header-time">{{ currentTime }}</span>
         </div>
       </header>

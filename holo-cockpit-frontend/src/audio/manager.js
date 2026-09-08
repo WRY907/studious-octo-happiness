@@ -1,6 +1,6 @@
 /* ============================================
    音频管理器 v3.0
-   - 背景音乐播放列表：public/audio/ 下多曲目循环连播（CC0 公有领域音乐）
+   - 背景音乐播放列表：public/audio/ 下多曲目循环连播
    - 曲目切换：next()/prev()，自动连播（一曲结束接下一曲）
    - 偏好记忆：音量 / 静音 / 曲目索引 存 localStorage
    - 无本地文件时回退：Web Audio 程序化合成 BGM（双失谐锯齿 Pad + 五声音阶琶音）
@@ -9,11 +9,9 @@
    - 事件：切曲时派发 window 事件 hw-audio-track（供播放器 UI 同步）
    ============================================ */
 
-/* 背景音乐播放列表（public/audio/ 下，CC0 公有领域，来源见 public/audio/LICENSE.md） */
+/* 背景音乐播放列表（public/audio/ 下的自定义曲目） */
 const BGM_PLAYLIST = [
-  { file: '/audio/bgm-1-tech.mp3',  name: 'Arpent · 科技创新',  composer: 'Kevin MacLeod' },
-  { file: '/audio/bgm-2-dark.mp3',  name: 'Beat One · 现代暗色', composer: 'Kevin MacLeod' },
-  { file: '/audio/bgm-3-calm.mp3',  name: 'Meditating Beat · 轻快', composer: 'Kevin MacLeod' }
+  { file: '/audio/bgm-you-should-know.mp4', name: 'You Should Know', composer: '李长庚' }
 ]
 
 /* 偏好存储键 */

@@ -40,7 +40,7 @@ dist-ssr/
 .DS_Store
 
 # ====== 本地私密配置（真实密码 / API Key，请勿提交）======
-holo-cockpit-backend/application-local.yml
+**/application-local.yml
 
 # ====== OS ======
 Thumbs.db

@@ -1,0 +1,114 @@
+[
+  {
+    "name": "Mate XT 2 非凡大师",
+    "file": "mate-xt2",
+    "image": "https://res.vmallres.com/pimages/FssCdnProxy/vmall_product_uom/pmsSalesFile/428_428_54F2E4A3A64E2BF20B2784C3A7111F57.png",
+    "price": 23999,
+    "local": "/images/phones/mate-xt2.png",
+    "size": 142008
+  },
+  {
+    "name": "Mate X7",
+    "file": "mate-x7",
+    "image": "https://res.vmallres.com/pimages/FssCdnProxy/vmall_product_uom/pmsSalesFile/428_428_162FFD53E0BD9BD021125F5296A50DC2.png",
+    "price": 11999,
+    "local": "/images/phones/mate-x7.png",
+    "size": 103244
+  },
+  {
+    "name": "Pura X Max",
+    "file": "pura-x-max",
+    "image": "https://res.vmallres.com/pimages/FssCdnProxy/vmall_product_uom/pmsSalesFile/428_428_641AA94A1BC6B49A43BF1BB045EEAC2A.png",
+    "price": 11999,
+    "local": "/images/phones/pura-x-max.png",
+    "size": 166794
+  },
+  {
+    "name": "Mate X6",
+    "file": "mate-x6",
+    "image": "https://res.vmallres.com/pimages/FssCdnProxy/vmall_product_uom/pmsSalesFile/428_428_F0BA7463EB35CEAC73D811C8C4D3EC75.png",
+    "price": 9999,
+    "local": "/images/phones/mate-x6.png",
+    "size": 116368
+  },
+  {
+    "name": "Mate 80 RS 非凡大师",
+    "file": "mate-80-rs",
+    "image": "https://res.vmallres.com/pimages/FssCdnProxy/vmall_product_uom/pmsSalesFile/428_428_C42771B009616C47F5D965927253D340.png",
+    "price": 10999,
+    "local": "/images/phones/mate-80-rs.png",
+    "size": 120799
+  },
+  {
+    "name": "Mate 80 Pro Max",
+    "file": "mate-80-pro-max",
+    "image": "https://res.vmallres.com/pimages/FssCdnProxy/vmall_product_uom/pmsSalesFile/428_428_4E8812CD2991B4EAD1AE50C01916CE3B.png",
+    "price": 8999,
+    "local": "/images/phones/mate-80-pro-max.png",
+    "size": 81632
+  },
+  {
+    "name": "Pura X View",
+    "file": "pura-x-view",
+    "image": "https://res.vmallres.com/pimages/FssCdnProxy/vmall_product_uom/pmsSalesFile/428_428_97BAA952DFC412268CC58A674B9578EE.png",
+    "price": 6999,
+    "local": "/images/phones/pura-x-view.png",
+    "size": 92938
+  },
+  {
+    "name": "Mate 80 Pro",
+    "file": "mate-80-pro",
+    "image": "https://res.vmallres.com/pimages/FssCdnProxy/vmall_product_uom/pmsSalesFile/428_428_00ADDBB12522603D4B061E09B32ED29B.png",
+    "price": 6999,
+    "local": "/images/phones/mate-80-pro.png",
+    "size": 97713
+  },
+  {
+    "name": "Pura 90 Pro Max",
+    "file": "pura-90-pro-max",
+    "image": "https://res.vmallres.com/pimages/FssCdnProxy/vmall_product_uom/pmsSalesFile/428_428_5C9316F0B18D28A6532AF0B4703AB166.png",
+    "price": 6499,
+    "local": "/images/phones/pura-90-pro-max.png",
+    "size": 95305
+  },
+  {
+    "name": "Pura 90 Pro",
+    "file": "pura-90-pro",
+    "image": "https://res.vmallres.com/pimages/FssCdnProxy/vmall_product_uom/pmsSalesFile/428_428_D8ED42C1C8C0634398A16DC14F74EE87.png",
+    "price": 5499,
+    "local": "/images/phones/pura-90-pro.png",
+    "size": 91595
+  },
+  {
+    "name": "Mate 80",
+    "file": "mate-80",
+    "image": "https://res.vmallres.com/pimages/FssCdnProxy/vmall_product_uom/pmsSalesFile/428_428_91223532B551EF92371D1E30D502A880.png",
+    "price": 5499,
+    "local": "/images/phones/mate-80.png",
+    "size": 101147
+  },
+  {
+    "name": "nova 16",
+    "file": "nova-16",
+    "image": "https://res.vmallres.com/pimages/FssCdnProxy/vmall_product_uom/pmsSalesFile/428_428_633DE9967870B25E957A505665A3A00E.png",
+    "price": 2999,
+    "local": "/images/phones/nova-16.png",
+    "size": 116941
+  },
+  {
+    "name": "nova 16 SE",
+    "file": "nova-16-se",
+    "image": "https://res.vmallres.com/pimages/FssCdnProxy/vmall_product_uom/pmsSalesFile/428_428_6B957C78B7BB9DB74E8D10916C42D014.png",
+    "price": 2699,
+    "local": "/images/phones/nova-16-se.png",
+    "size": 107283
+  },
+  {
+    "name": "华为畅享 90 Pro Max",
+    "file": "changxiang-90-pro-max",
+    "image": "https://res.vmallres.com/pimages/FssCdnProxy/vmall_product_uom/pmsSalesFile/428_428_EAC757A4AF3116C840A2073614CDFF6C.png",
+    "price": 1899,
+    "local": "/images/phones/changxiang-90-pro-max.png",
+    "size": 129679
+  }
+]

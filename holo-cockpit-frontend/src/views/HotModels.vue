@@ -10,7 +10,7 @@
     <!-- ===== 顶部栏 ===== -->
     <header class="hot-header">
       <div class="header-left">
-        <router-link to="/" class="back-link" title="返回数据大屏">🖥 返回大屏</router-link>
+        <router-link to="/cockpit" class="back-link" title="返回数据大屏">🖥 返回大屏</router-link>
         <router-link v-if="!isAdmin" to="/admin/dashboard" class="back-link back-sub" title="返回管理后台">⬡ 后台</router-link>
         <router-link to="/trend" class="back-link back-sub" title="销售趋势分析">📈 趋势分析</router-link>
         <router-link to="/traffic" class="back-link back-sub" title="流量来源分析">🛰 流量分析</router-link>

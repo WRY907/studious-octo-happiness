@@ -13,7 +13,7 @@ function guard(to, from, next) {
   }
   // 已登录访问登录/注册页 → 跳大屏
   if ((to.path === '/login' || to.path === '/register') && token) {
-    return next('/')
+    return next('/cockpit')
   }
   next()
 }
@@ -21,6 +21,11 @@ function guard(to, from, next) {
 const routes = [
   {
     path: '/',
+    name: 'Landing',
+    component: () => import('@/views/Landing.vue') // 炫酷落地页（公开访问）
+  },
+  {
+    path: '/cockpit',
     name: 'Cockpit',
     component: () => import('@/views/Cockpit.vue'),
     meta: { requiresAuth: true } // 大屏需登录后查看

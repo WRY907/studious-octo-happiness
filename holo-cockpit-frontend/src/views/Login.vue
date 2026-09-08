@@ -11,7 +11,7 @@
     </div>
 
     <!-- 返回大屏 -->
-    <router-link to="/" class="back-link">🖥 返回大屏</router-link>
+    <router-link to="/" class="back-link">🖥 返回首页</router-link>
 
     <!-- 登录卡片 -->
     <div class="login-card">
@@ -137,7 +137,7 @@ async function handleLogin() {
     audioManager.success() // 登录成功音
     showToast('登录成功，正在进入全息驾驶舱…', 'success')
     // 登录后直接进入全息大屏（大屏右上角可进入管理后台）
-    router.push('/')
+    router.push('/cockpit')
   } catch (e) {
     const msg = e?.response?.data?.message || e?.message || '登录失败，请检查用户名或密码'
     audioManager.error() // 登录失败音（密码错误/待审/被拒/停用）

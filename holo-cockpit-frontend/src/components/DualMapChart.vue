@@ -275,7 +275,18 @@ watch(
   { deep: true }
 )
 
-const onResize = () => chart && chart.resize()
+/* 容器尺寸守卫：布局扰动瞬时 0 尺寸时跳过 resize（防止地图塌陷不自愈），恢复后重试 */
+let resizeRetryTimer = null
+const onResize = () => {
+  if (!chart) return
+  const el = chartEl.value
+  if (!el || el.clientWidth === 0 || el.clientHeight === 0) {
+    clearTimeout(resizeRetryTimer)
+    resizeRetryTimer = setTimeout(() => onResize(), 200)
+    return
+  }
+  try { chart.resize() } catch (e) { /* 0 尺寸瞬时异常兜底 */ }
+}
 
 onMounted(() => {
   // appear 首次入场也会触发 after-enter → renderMap
@@ -284,6 +295,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', onResize)
+  clearTimeout(resizeRetryTimer)
   if (chart) { chart.dispose(); chart = null }
 })
 </script>
