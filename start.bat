@@ -30,7 +30,6 @@ if errorlevel 1 (
   exit /b 1
 )
 echo   ✅ Node: 
-
 node --version
 
 REM ================= 2. 前端依赖 =================
@@ -59,29 +58,47 @@ where mysql >nul 2>nul
 if errorlevel 1 (
   echo   ⚠️ 未检测到 mysql 命令，跳过数据库检查
   echo      若数据库尚未初始化，请手动执行：mysql -uroot -p ^< sql\init.sql
-) else (
-  mysql -uroot -e "use huawei_cockpit;" >nul 2>nul
-  if errorlevel 1 (
-    echo   ⚠️ 数据库 huawei_cockpit 不存在或密码不是默认值
-    set /p initDb=      是否现在初始化数据库？(Y/N)：
-    if /i "%initDb%"=="Y" (
-      set /p dbUser=      请输入 MySQL 用户名 (默认 root)：
-      if "!dbUser!"=="" set "dbUser=root"
-      set /p dbPass=      请输入 MySQL 密码：
-      mysql -u!dbUser! -p!dbPass! --default-character-set=utf8 < sql\init.sql
-      if errorlevel 1 (
-        echo   ❌ 数据库初始化失败，请检查 MySQL 服务与账号密码
-      ) else (
-        echo   ✅ 数据库 huawei_cockpit 初始化完成
-      )
-    ) else (
-      echo      跳过初始化。注意：后端启动需要数据库已就绪
-    )
-  ) else (
-    echo   ✅ 数据库 huawei_cockpit 已就绪
+  goto start_backend
+)
+
+REM 从 application-local.yml 读取数据库账号密码（与后端实际连接一致）
+set "DB_USER=root"
+set "DB_PASS="
+if exist "holo-cockpit-backend\application-local.yml" (
+  for /f "usebackq tokens=1* delims=: " %%a in (`findstr /r /c:"^ *username:" /c:"^ *password:" "holo-cockpit-backend\application-local.yml"`) do (
+    if /i "%%a"=="username" set "DB_USER=%%b"
+    if /i "%%a"=="password" set "DB_PASS=%%b"
   )
 )
 
+if defined DB_PASS (
+  mysql -u%DB_USER% -p%DB_PASS% -e "use huawei_cockpit;" >nul 2>nul
+) else (
+  mysql -u%DB_USER% -e "use huawei_cockpit;" >nul 2>nul
+)
+if not errorlevel 1 (
+  echo   ✅ 数据库 huawei_cockpit 已就绪
+  goto start_backend
+)
+
+echo   ⚠️ 数据库 huawei_cockpit 不可用（未初始化或账号密码变更）
+set /p "initDb=      是否现在初始化数据库？(Y/N)："
+if /i not "%initDb%"=="Y" (
+  echo      跳过初始化。注意：后端启动需要数据库已就绪
+  goto start_backend
+)
+
+set /p "dbUser=      请输入 MySQL 用户名（默认 %DB_USER%）："
+if not defined dbUser set "dbUser=%DB_USER%"
+set /p "dbPass=      请输入 MySQL 密码："
+mysql -u%dbUser% -p%dbPass% --default-character-set=utf8 < sql\init.sql
+if errorlevel 1 (
+  echo   ❌ 数据库初始化失败，请检查 MySQL 服务与账号密码
+) else (
+  echo   ✅ 数据库 huawei_cockpit 初始化完成
+)
+
+:start_backend
 REM ================= 4. 启动后端 =================
 echo.
 echo [4/5] 启动后端服务（Spring Boot，端口 8080）...
@@ -112,7 +129,7 @@ echo   提示：两个服务窗口请不要关闭，关闭窗口即停止服务
 echo         后端首次启动需等待依赖下载与编译完成
 echo ================================================================
 echo.
-timeout /t 8 /nobreak >nul
+ping -n 9 127.0.0.1 >nul
 start http://localhost:3000/
 echo 已在浏览器中打开 http://localhost:3000/（若未打开请手动访问）
 pause
