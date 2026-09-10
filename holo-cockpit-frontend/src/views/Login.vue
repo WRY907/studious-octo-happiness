@@ -68,6 +68,12 @@
         <router-link to="/register" class="reg-link">🏪 商家注册</router-link>
         <span class="reg-note">注册需管理员审核通过</span>
       </div>
+
+      <!-- 在线演示模式入口（GitHub Pages 静态部署等后端不可用场景） -->
+      <div class="demo-bar">
+        <button type="button" class="demo-btn" @click="enterDemo">🎬 演示模式 · 直接进入大屏</button>
+        <span class="demo-note">无需后端 · 数据为前端仿真（三级降级设计）</span>
+      </div>
     </div>
 
     <!-- 错误/警告 toast -->
@@ -117,6 +123,16 @@ function particleStyle(n) {
     animationDuration: `${dur}s`,
     animationDelay: `${delay}s`
   }
+}
+
+// 演示模式：跳过后端认证直接进入大屏（线上静态部署场景，数据走前端 Mock 降级）
+function enterDemo() {
+  localStorage.setItem('hw_token', 'demo-online')
+  localStorage.setItem('hw_role', 'ADMIN')
+  localStorage.setItem('hw_username', '在线演示')
+  localStorage.setItem('hw_merchant', '')
+  showToast('已进入演示模式，数据为前端仿真', 'success')
+  router.push('/cockpit')
 }
 
 // 登录
@@ -434,6 +450,41 @@ onBeforeUnmount(() => clearTimeout(toastTimer))
 }
 
 .reg-note {
+  font-size: 10px;
+  color: var(--text-faint);
+  letter-spacing: 0.5px;
+}
+
+/* ---------- 演示模式入口 ---------- */
+.demo-bar {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+}
+
+.demo-btn {
+  width: 100%;
+  padding: 10px 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #7dffd0;
+  background: linear-gradient(135deg, rgba(0, 255, 163, 0.10), rgba(0, 229, 255, 0.14));
+  border: 1px solid rgba(0, 255, 163, 0.38);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all var(--dur-fast);
+}
+
+.demo-btn:hover {
+  background: linear-gradient(135deg, rgba(0, 255, 163, 0.24), rgba(0, 229, 255, 0.28));
+  box-shadow: 0 0 18px rgba(0, 255, 163, 0.3);
+  color: #fff;
+}
+
+.demo-note {
   font-size: 10px;
   color: var(--text-faint);
   letter-spacing: 0.5px;

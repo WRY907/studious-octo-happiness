@@ -52,7 +52,8 @@ const XIAN_COORD = [108.948024, 34.263161]
 const geoCache = { shaanxi: null, china: null }
 async function loadGeo(name) {
   if (geoCache[name]) return geoCache[name]
-  const res = await fetch(`/${name}.json`)
+  // BASE_URL 适配 GitHub Pages 子路径部署（dev 下为根路径，行为不变）
+  const res = await fetch(`${import.meta.env.BASE_URL}${name}.json`)
   if (!res.ok) throw new Error('HTTP ' + res.status)
   const json = await res.json()
   echarts.registerMap(name, json)

@@ -256,6 +256,8 @@ const phones = [
   { name: 'nova 16 SE', file: 'nova-16-se', price: 2699, local: '/images/phones/nova-16-se.png' },
   { name: '华为畅享 90 Pro Max', file: 'changxiang-90-pro-max', price: 1899, local: '/images/phones/changxiang-90-pro-max.png' }
 ]
+// 图片路径加 BASE_URL 前缀，适配 GitHub Pages 子路径部署（dev 下为根路径，行为不变）
+phones.forEach(p => { p.local = import.meta.env.BASE_URL + p.local.slice(1) })
 
 /* ===== 特性卡 ===== */
 const features = [

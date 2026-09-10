@@ -39,7 +39,7 @@ const PHONE_LIBRARY = [
 export function phoneImg(modelName) {
   const n = String(modelName || '').toLowerCase()
   for (const p of PHONE_LIBRARY) {
-    if (p.match.some(m => n.includes(m))) return '/images/phones/' + p.key + (p.key === 'pocket-3' ? '.jpg' : '.png')
+    if (p.match.some(m => n.includes(m))) return import.meta.env.BASE_URL + 'images/phones/' + p.key + (p.key === 'pocket-3' ? '.jpg' : '.png')
   }
   return null
 }

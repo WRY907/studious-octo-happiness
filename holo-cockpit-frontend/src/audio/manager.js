@@ -90,7 +90,7 @@ class AudioManager {
       // 再探测播放列表中存在的曲目（HEAD 请求，异步）
       const available = []
       for (const t of BGM_PLAYLIST) {
-        if (await this._probeFile(t.file)) available.push(t)
+        if (await this._probeFile(import.meta.env.BASE_URL + t.file.slice(1))) available.push(t)
       }
 
       if (available.length) {
@@ -124,11 +124,13 @@ class AudioManager {
     const track = this.playlist[index]
     if (!track) return
     try {
+      // 播放源加 BASE_URL 前缀，适配 GitHub Pages 子路径部署（dev 下为根路径，行为不变）
+      const fileUrl = import.meta.env.BASE_URL + track.file.slice(1)
       if (this.bgMusic) {
         this.bgMusic.pause()
-        this.bgMusic.src = track.file
+        this.bgMusic.src = fileUrl
       } else {
-        this.bgMusic = new Audio(track.file)
+        this.bgMusic = new Audio(fileUrl)
       }
       this.useFile = true
       this.trackIndex = index

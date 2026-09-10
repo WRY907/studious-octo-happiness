@@ -329,24 +329,25 @@ async function loadData() {
   renderAll()
 }
 
-/* ===== 渠道 logo 映射（爬取自各平台官网 favicon） ===== */
+/* ===== 渠道 logo 映射（爬取自各平台官网 favicon；加 BASE_URL 前缀适配 GitHub Pages 子路径部署） ===== */
+const B = import.meta.env.BASE_URL
 const LOGO_MAP = {
-  '百度搜索': '/channels/baidu.ico',
-  '抖音': '/channels/douyin.ico',
-  '官网直达': '/channels/huawei.ico',
-  '京东': '/channels/jd.ico',
-  '微信视频号': '/channels/weixin.ico',
-  '天猫': '/channels/tmall.ico',
-  '拼多多': '/channels/pinduoduo.ico',
-  'APP内访问': '/channels/huawei.ico',
-  '360搜索': '/channels/so360.ico',
-  '微博': '/channels/weibo.ico',
-  '搜狗搜索': '/channels/sogou.ico',
-  '小红书': '/channels/xiaohongshu.ico',
-  '门店扫码': '/channels/huawei.ico',
-  '体验店预约': '/channels/huawei.ico',
-  'B站': '/channels/bilibili.ico',
-  '必应': '/channels/bing.ico'
+  '百度搜索': B + 'channels/baidu.ico',
+  '抖音': B + 'channels/douyin.ico',
+  '官网直达': B + 'channels/huawei.ico',
+  '京东': B + 'channels/jd.ico',
+  '微信视频号': B + 'channels/weixin.ico',
+  '天猫': B + 'channels/tmall.ico',
+  '拼多多': B + 'channels/pinduoduo.ico',
+  'APP内访问': B + 'channels/huawei.ico',
+  '360搜索': B + 'channels/so360.ico',
+  '微博': B + 'channels/weibo.ico',
+  '搜狗搜索': B + 'channels/sogou.ico',
+  '小红书': B + 'channels/xiaohongshu.ico',
+  '门店扫码': B + 'channels/huawei.ico',
+  '体验店预约': B + 'channels/huawei.ico',
+  'B站': B + 'channels/bilibili.ico',
+  '必应': B + 'channels/bing.ico'
 }
 const EMOJI_MAP = {
   '必应': '🔍',
